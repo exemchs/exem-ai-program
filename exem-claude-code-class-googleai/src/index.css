@@ -1,0 +1,31 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Pretendard", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Hide Unicorn Studio Logo */
+a[href*="unicorn.studio"] {
+  display: none !important;
+}
+
+.light-theme {
+  filter: invert(1) hue-rotate(180deg);
+  background-color: #f5f5f5;
+}
+
+.light-theme img,
+.light-theme video,
+.light-theme [data-us-project],
+.light-theme .terminal-window,
+.light-theme .revert-theme {
+  filter: invert(1) hue-rotate(180deg);
+}
