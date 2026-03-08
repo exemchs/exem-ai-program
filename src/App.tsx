@@ -43,7 +43,7 @@ export default function App() {
               이 프로그램은 CLI를 다뤄본 적 없는 비전공자 난이도로 설계되었습니다.
             </p>
             <p className="text-[#4B5563] text-sm leading-relaxed mb-6">
-              중급자 이상은 Anthropic 공식 교육 프로그램 : <a href="https://www.anthropic.com/learn" target="_blank" rel="noreferrer" className="text-blue-500 hover:text-blue-600 underline">Skilljar</a>를 추천드립니다.
+              중급자 이상은 Anthropic 공식 교육 프로그램 : <a href="https://anthropic.skilljar.com/" target="_blank" rel="noreferrer" className="text-blue-500 hover:text-blue-600 underline">Skilljar</a>를 추천드립니다.
             </p>
             <p className="text-[#9CA3AF] text-sm">감사합니다.</p>
           </div>
