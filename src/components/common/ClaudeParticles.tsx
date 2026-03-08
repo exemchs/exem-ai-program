@@ -125,7 +125,8 @@ export default function ClaudeParticles() {
     let ambientDots: AmbientDot[] = [];
     let gridMap: Map<string, SandClump> = new Map();
     let drainCounter = 0;
-    let cycleState: "running" | "paused" | "fadeout" | "fadein" = "running";
+    let cycleState: "running" | "paused" | "flipping" = "running";
+    const FLIP_DURATION = 0.6; // 뒤집기 총 시간
     let cycleTimer = 0;
     let globalAlpha = 1;
     let lastTime = 0;
@@ -647,56 +648,58 @@ export default function ClaudeParticles() {
         }
         updatePhysics(now);
 
-        const allLanded = clumps.length > 0 && clumps.every(
+        const allDone = clumps.length > 0 && clumps.every(
           c => c.state === "landed" || (c.state === "fading" && c.fadeAlpha <= 0)
         );
-        if (allLanded) {
+        if (allDone) {
           cycleState = "paused";
           cycleTimer = 0;
         }
       } else if (cycleState === "paused") {
         cycleTimer += dt;
         if (cycleTimer >= PAUSE_DURATION) {
-          cycleState = "fadeout";
+          cycleState = "flipping";
           cycleTimer = 0;
         }
-      } else if (cycleState === "fadeout") {
+      } else if (cycleState === "flipping") {
         cycleTimer += dt;
-        globalAlpha = Math.max(0, 1 - cycleTimer / FADE_DURATION);
-        if (globalAlpha <= 0) {
-          // 리셋
-          clumps.forEach(c => {
-            c.x = c.homeX;
-            c.y = c.homeY;
-            c.state = "resting";
-            c.vx = 0;
-            c.vy = 0;
-            c.trail = [];
-            c.landedAt = 0;
-            c.fadeAlpha = 1;
-          });
-          // gridMap 재구축
-          gridMap.clear();
-          for (const c of clumps) {
-            gridMap.set(gridKey(c.gridRow, c.gridCol), c);
-          }
-          landingSlots.forEach(s => s.taken = false);
+        const progress = Math.min(cycleTimer / FLIP_DURATION, 1);
+
+        // 중간 지점에서 리셋 (한번만)
+        if (progress >= 0.5 && globalAlpha <= 0) {
+          buildClumps();
           currentBottomRow = -1;
           drainCounter = 0;
-          cycleState = "fadein";
-          cycleTimer = 0;
+          globalAlpha = 0.01; // 리셋 완료 마커
         }
-      } else if (cycleState === "fadein") {
-        cycleTimer += dt;
-        globalAlpha = Math.min(1, cycleTimer / FADE_DURATION);
-        if (globalAlpha >= 1) {
+
+        if (progress < 0.5) {
+          // 전반: 눌려서 사라짐 (scaleY 1→0)
+          globalAlpha = 1 - progress * 2;
+        } else {
+          // 후반: 새로 나타남 (scaleY 0→1)
+          globalAlpha = (progress - 0.5) * 2;
+        }
+
+        if (progress >= 1) {
           globalAlpha = 1;
           cycleState = "running";
         }
       }
 
       drawBackground(now);
-      drawEdge(now);
+
+      // flipping 시 Y축 스케일 (뒤집기 효과)
+      if (cycleState === "flipping") {
+        const progress = Math.min(cycleTimer / FLIP_DURATION, 1);
+        const scaleY = progress < 0.5
+          ? 1 - progress * 2    // 1 → 0
+          : (progress - 0.5) * 2; // 0 → 1
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.scale(1, scaleY || 0.01);
+        ctx.translate(-cx, -cy);
+      }
 
       // hourglass 전체 clip — edge 밖 clump 안 보이게
       ctx.save();
@@ -725,7 +728,12 @@ export default function ClaudeParticles() {
         renderClump(c, now, now);
       }
 
-      ctx.restore();
+      drawEdge(now);
+      ctx.restore(); // clip restore
+
+      if (cycleState === "flipping") {
+        ctx.restore(); // flip transform restore
+      }
 
       drawAmbient(now);
       animId = requestAnimationFrame(draw);
