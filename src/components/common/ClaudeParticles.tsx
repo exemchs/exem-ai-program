@@ -223,12 +223,12 @@ export default function ClaudeParticles() {
 
     function buildEdgeDots() {
       edgeDots = [];
-      // 알갱이 최대 반지름 ~3.5px → 간격 8px 이상이어야 겹치지 않음
-      const dotSpacing = 8;
+      // 간격: 알갱이가 겹치지 않되 빽빽하게
+      const dotSpacing = 5.5;
       const totalH = hgH * 2;
       const steps = Math.floor(totalH / dotSpacing);
-      // 3줄: 바깥으로 간격 10px씩 (겹치지 않게)
-      const offsets = [0, 10, 20];
+      // 3줄: 바깥으로 간격 7px씩 (겹치지 않게)
+      const offsets = [0, 7, 14];
 
       for (let i = 0; i <= steps; i++) {
         const ny = -1 + (2 * i) / steps;
@@ -651,8 +651,8 @@ export default function ClaudeParticles() {
     function drawEdge(t: number) {
       for (const ed of edgeDots) {
         const breath = Math.sin(t * ed.speed + ed.phase) * 0.5 + 0.5;
-        const r = ed.baseR * (0.15 + breath * 0.85);
-        const a = (0.15 + breath * 0.45) * globalAlpha;
+        const r = ed.baseR * (0.4 + breath * 0.6);
+        const a = (0.2 + breath * 0.4) * globalAlpha; // 최소 20%
         if (a < 0.01) continue;
         ctx.beginPath();
         ctx.arc(ed.x, ed.y, r, 0, PI2);
