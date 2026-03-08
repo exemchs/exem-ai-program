@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { X } from "lucide-react";
 import type { OsType } from "./constants/os";
 import HeroSection from "./components/sections/HeroSection";
 import WhyNowSection from "./components/sections/WhyNowSection";
@@ -12,6 +13,12 @@ export default function App() {
     const p = navigator.platform.toLowerCase();
     return p.includes("win") ? "win" : "mac";
   });
+  const [showNotice, setShowNotice] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowNotice(true), 800);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#F8F9FC] text-[#1a2234] font-sans selection:bg-blue-200/50">
@@ -21,6 +28,27 @@ export default function App() {
       <PrerequisitesSection os={os} onOsChange={setOs} />
       <CurriculumSection />
       <FAQSection />
+
+      {showNotice && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowNotice(false)}>
+          <div className="relative bg-white rounded-2xl p-8 max-w-md w-full mx-6 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => setShowNotice(false)}
+              className="absolute top-4 right-4 text-[#9CA3AF] hover:text-[#1a2234] transition-colors cursor-pointer"
+            >
+              <X size={20} />
+            </button>
+            <h3 className="text-lg font-medium text-[#1a2234] mb-4">참조사항</h3>
+            <p className="text-[#4B5563] text-sm leading-relaxed mb-3">
+              이 프로그램은 CLI를 다뤄본 적 없는 비전공자 난이도로 설계되었습니다.
+            </p>
+            <p className="text-[#4B5563] text-sm leading-relaxed mb-6">
+              중급자 이상은 Anthropic 공식 교육 프로그램 : <a href="https://www.anthropic.com/learn" target="_blank" rel="noreferrer" className="text-blue-500 hover:text-blue-600 underline">Skilljar</a>를 추천드립니다.
+            </p>
+            <p className="text-[#9CA3AF] text-sm">감사합니다.</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
