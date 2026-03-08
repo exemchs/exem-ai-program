@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import type { OsType } from "./constants/os";
 import HeroSection from "./components/sections/HeroSection";
 import WhyNowSection from "./components/sections/WhyNowSection";
 import WhatWeLearnSection from "./components/sections/WhatWeLearnSection";
@@ -11,7 +12,7 @@ import FAQSection from "./components/sections/FAQSection";
 import FooterSection from "./components/sections/FooterSection";
 
 export default function App() {
-  const [os, setOs] = useState<"mac" | "win">("mac");
+  const [os, setOs] = useState<OsType>("mac");
   const [isDarkMode, setIsDarkMode] = useState(true);
 
   useEffect(() => {
