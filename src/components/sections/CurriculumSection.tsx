@@ -326,7 +326,7 @@ export default function CurriculumSection() {
         <div className="max-w-5xl mx-auto px-6">
           <div className="text-center mb-12 md:mb-20">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-normal text-white/70 mb-2">
-              엑셈 비전공자를 위한
+              엑셈 구성원을 위한
             </h2>
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-normal text-white tracking-tight">
               클로드 코드 기초 교육

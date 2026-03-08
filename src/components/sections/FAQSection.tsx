@@ -4,7 +4,7 @@ import SectionHeading from "../common/SectionHeading";
 const items = [
   {
     q: "이 프로그램은 왜 만들었나요?",
-    a: "Claude Code가 어렵게만 느껴지는 비전공자를 위해 난이도를 낮춰 구성했습니다.",
+    a: "Claude Code가 어렵게만 느껴지는 엑셈 구성원분들을 위해 난이도를 낮춰 구성했습니다.",
   },
   {
     q: "커리큘럼은 어떻게 만들어졌나요?",

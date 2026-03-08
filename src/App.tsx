@@ -33,7 +33,7 @@ export default function App() {
           <div className="bg-white rounded-2xl p-8 max-w-lg w-full mx-6 shadow-2xl">
             <h3 className="text-lg font-medium text-[#1a2234] mb-4">참조사항</h3>
             <p className="text-[#4B5563] text-sm leading-relaxed mb-3">
-              이 프로그램은 CLI를 다뤄본 적 없는 비전공자 난이도로 설계되었습니다.
+              이 프로그램은 CLI를 다뤄본 적 없는 엑셈 구성원분들을 위한 난이도로 설계되었습니다.
             </p>
             <p className="text-[#4B5563] text-sm leading-relaxed mb-6">
               중급자 이상은 Anthropic 공식 교육 프로그램 : <a href="https://anthropic.skilljar.com/" target="_blank" rel="noreferrer" className="text-blue-500 hover:text-blue-600 underline">Skilljar</a>를 추천드립니다.
