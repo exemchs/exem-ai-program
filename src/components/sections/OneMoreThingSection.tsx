@@ -6,9 +6,9 @@ export default function OneMoreThingSection() {
     <section className="py-32 relative">
       <div className="max-w-7xl mx-auto px-6">
         <SectionHeading subtitle="One More Thing">
-          앞으로 이런 것들도
+          하나를 익히면,
           <br />
-          도전해보세요
+          그 다음은 스스로 찾게 됩니다.
         </SectionHeading>
 
         <div className="grid md:grid-cols-2 gap-8">
@@ -20,9 +20,7 @@ export default function OneMoreThingSection() {
               에이전트 팀 만들기
             </h3>
             <p className="text-zinc-400 mb-6">
-              Claude Code를 여러 개 동시에 실행해서 각각 다른 역할을 맡기세요.
-              하나는 리서치, 하나는 문서 작성, 하나는 검증 — 마치 팀처럼
-              협업합니다.
+              여러 Claude Code를 동시에 띄워, 각각 다른 역할을 맡깁니다.
             </p>
             <div className="p-4 rounded-xl bg-black border border-white/5 font-mono text-sm text-zinc-300">
               <span className="text-zinc-500"># 팁: 각각 다른 규칙 설정</span>
@@ -39,8 +37,7 @@ export default function OneMoreThingSection() {
               나만의 자동화 파이프라인
             </h3>
             <p className="text-zinc-400 mb-6">
-              Skill + MCP + CLAUDE.md를 조합해서 완전 자동화 워크플로우를
-              만드세요. 예: 매주 월요일 Notion에서 주간 업무 → 자동 보고서 생성.
+              Skill, MCP, CLAUDE.md를 조합해 반복 업무를 자동화합니다.
             </p>
             <a
               href="https://github.com/modelcontextprotocol/servers"

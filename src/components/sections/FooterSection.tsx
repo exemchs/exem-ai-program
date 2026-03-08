@@ -13,9 +13,9 @@ export default function FooterSection({
           오늘 시작됩니다.
         </h2>
         <p className="text-xl text-zinc-400 mb-12 max-w-2xl mx-auto">
-          처음은 원래 어렵고 막막합니다.
+          처음이라 같이 합니다.
           <br />
-          하지만 일단 시작할 때 진짜 변화가 만들어집니다.
+          그래서 쉬워집니다.
         </p>
         <a
           href="#prerequisites"
