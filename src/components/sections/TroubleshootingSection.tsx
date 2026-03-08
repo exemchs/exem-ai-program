@@ -5,17 +5,17 @@ export default function TroubleshootingSection({ os }: { os: OsType }) {
   const keys = OS_KEYS[os];
   return (
     <section className="py-24 bg-orange-500/5 border-y border-orange-500/10">
-      <div className="max-w-4xl mx-auto px-6">
+      <div className="max-w-5xl mx-auto px-6">
         <div className="flex items-center gap-4 mb-8">
           <AlertCircle className="text-orange-400" size={32} />
-          <h2 className="text-3xl font-semibold text-white">
+          <h2 className="text-3xl font-medium text-white">
             잠시 멈추고 싶다면
           </h2>
         </div>
 
         <div className="space-y-6">
           <div className="p-6 rounded-2xl bg-black/50 border border-white/5">
-            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <h3 className="text-lg font-medium text-white mb-4 flex items-center gap-2">
               <Play size={18} className="text-green-400" /> 다시 시작할 때
             </h3>
             <ol className="list-decimal list-inside text-zinc-400 space-y-2">
@@ -43,7 +43,7 @@ export default function TroubleshootingSection({ os }: { os: OsType }) {
           </div>
 
           <div className="p-6 rounded-2xl bg-black/50 border border-white/5">
-            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <h3 className="text-lg font-medium text-white mb-4 flex items-center gap-2">
               <AlertCircle size={18} className="text-red-400" /> 이어하기가 안
               될 때
             </h3>

@@ -23,7 +23,7 @@ export default function WhyNowSection() {
 
   return (
     <section id="why-now" className="py-28 relative border-t border-white/5">
-      <div className="max-w-4xl mx-auto px-6">
+      <div className="max-w-5xl mx-auto px-6">
         <SectionHeading subtitle="Why Now">
           최적의 타이밍,
           <br />
@@ -43,7 +43,7 @@ export default function WhyNowSection() {
               <div className="w-12 h-12 rounded-2xl bg-zinc-800 flex items-center justify-center text-orange-400 mb-6 group-hover:scale-110 transition-transform">
                 {item.icon}
               </div>
-              <h3 className="text-lg font-semibold text-white mb-4">
+              <h3 className="text-lg font-medium text-white mb-4">
                 {item.title}
               </h3>
               <p className="text-zinc-400 leading-relaxed">{item.desc}</p>

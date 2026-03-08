@@ -41,7 +41,7 @@ export default function WhatWeLearnSection() {
 
   return (
     <section className="py-28 bg-zinc-900/30 border-y border-white/5">
-      <div className="max-w-4xl mx-auto px-6">
+      <div className="max-w-5xl mx-auto px-6">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div>
             <SectionHeading subtitle="What We Learn">
@@ -65,7 +65,7 @@ export default function WhatWeLearnSection() {
                   className={`flex items-center gap-3 px-6 py-4 rounded-2xl border transition-all text-left ${activeTab === idx ? "bg-orange-500/10 border-orange-500/30 text-orange-400" : "bg-zinc-900/50 border-white/5 text-zinc-400 hover:bg-zinc-900 hover:text-zinc-300"}`}
                 >
                   {tab.icon}
-                  <span className="font-semibold">{tab.title}</span>
+                  <span className="font-medium">{tab.title}</span>
                 </button>
               ))}
             </div>

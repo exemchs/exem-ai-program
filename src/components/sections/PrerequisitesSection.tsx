@@ -114,7 +114,7 @@ export default function PrerequisitesSection({
 
   return (
     <section id="prerequisites" className="py-28 relative">
-      <div className="max-w-4xl mx-auto px-6">
+      <div className="max-w-5xl mx-auto px-6">
         <div className="flex flex-col items-center mb-16 md:mb-24 gap-8">
           <SectionHeading subtitle="Prerequisites" align="center">
             간단한 사전 세팅
@@ -147,10 +147,10 @@ export default function PrerequisitesSection({
               className="p-6 rounded-2xl bg-zinc-900/50 border border-white/5 flex flex-col h-full hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(249,115,22,0.15)] hover:border-orange-500/30 transition-all duration-300 group"
             >
               <div className="flex items-center gap-3 mb-4">
-                <span className="text-2xl font-bold text-orange-400">
+                <span className="text-2xl font-medium text-orange-400">
                   {item.step}
                 </span>
-                <h3 className="text-xl font-semibold text-white flex items-center gap-2">
+                <h3 className="text-xl font-medium text-white flex items-center gap-2">
                   {item.title}
                 </h3>
               </div>
@@ -168,7 +168,7 @@ export default function PrerequisitesSection({
         </div>
 
         <div className="max-w-3xl mx-auto">
-          <h3 className="text-2xl font-semibold text-white mb-12 text-center">
+          <h3 className="text-2xl font-medium text-white mb-12 text-center">
             5분이면 준비 끝
           </h3>
 
@@ -182,11 +182,11 @@ export default function PrerequisitesSection({
                 transition={{ delay: i * 0.1 }}
                 className="p-6 md:p-8 rounded-3xl bg-zinc-900/50 border border-white/5 flex flex-col md:flex-row gap-6 items-start group hover:border-orange-500/30 transition-colors"
               >
-                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-orange-500/10 text-orange-400 font-bold shrink-0">
+                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-orange-500/10 text-orange-400 font-medium shrink-0">
                   {i + 1}
                 </div>
                 <div className="flex-grow w-full overflow-hidden">
-                  <h4 className="text-xl font-semibold text-white mb-2">
+                  <h4 className="text-xl font-medium text-white mb-2">
                     {step.title}
                   </h4>
                   <p className="text-zinc-400 mb-4">
@@ -253,7 +253,7 @@ export default function PrerequisitesSection({
           </div>
 
           <div className="mt-12 text-center">
-            <p className="text-xl font-semibold text-white">
+            <p className="text-xl font-medium text-white">
               설치 과정이 막막하거나, 어렵게 느껴진다면 Claude에게 물어보세요.
               <br />
               AI는 AI가 제일 잘 아니까요.

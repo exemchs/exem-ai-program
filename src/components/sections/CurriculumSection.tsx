@@ -43,7 +43,7 @@ export default function CurriculumSection() {
       id="curriculum"
       className="py-28 bg-zinc-900/30 border-y border-white/5"
     >
-      <div className="max-w-4xl mx-auto px-6">
+      <div className="max-w-5xl mx-auto px-6">
         <SectionHeading subtitle="Curriculum">
           하루 1시간씩,
           <br />딱 5일이면 충분합니다
@@ -66,14 +66,14 @@ export default function CurriculumSection() {
 
               <div className="relative z-20">
                 <h3
-                  className={`font-bold text-white transition-all duration-500 ${activeDay === item.day ? "text-5xl mb-6" : "text-3xl mb-2"}`}
+                  className={`font-medium text-white transition-all duration-500 ${activeDay === item.day ? "text-5xl mb-6" : "text-3xl mb-2"}`}
                 >
                   Day {item.day}
                 </h3>
                 <div
                   className={`overflow-hidden transition-all duration-500 ${activeDay === item.day ? "max-h-80 opacity-100" : "max-h-0 opacity-0"}`}
                 >
-                  <h4 className="font-semibold text-white text-xl mb-3">
+                  <h4 className="font-medium text-white text-xl mb-3">
                     {item.title}
                   </h4>
                   <p className="text-zinc-300 leading-relaxed mb-4">

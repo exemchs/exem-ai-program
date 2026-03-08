@@ -63,7 +63,7 @@ export default function ReferencePage({ onBack }: { onBack: () => void }) {
               Reference
             </p>
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-white tracking-tight mb-4">
+          <h1 className="text-4xl md:text-5xl font-medium text-white tracking-tight mb-4">
             추천 레퍼런스
           </h1>
           <p className="text-lg text-zinc-400 mb-16">
@@ -84,7 +84,7 @@ export default function ReferencePage({ onBack }: { onBack: () => void }) {
               className="block p-6 md:p-8 rounded-2xl bg-zinc-900/50 border border-white/5 hover:border-orange-500/30 hover:-translate-y-1 transition-all duration-300 group"
             >
               <div className="flex items-start justify-between gap-4 mb-3">
-                <h2 className="text-xl font-semibold text-white group-hover:text-orange-400 transition-colors">
+                <h2 className="text-xl font-medium text-white group-hover:text-orange-400 transition-colors">
                   {ref.title}
                 </h2>
                 <ExternalLink

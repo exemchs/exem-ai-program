@@ -6,8 +6,8 @@ export default function FooterSection({
   return (
     <footer className="py-28 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-900/20 pointer-events-none"></div>
-      <div className="max-w-4xl mx-auto px-6 relative z-10 text-center">
-        <h2 className="text-2xl md:text-4xl font-bold text-white tracking-tight mb-8">
+      <div className="max-w-5xl mx-auto px-6 relative z-10 text-center">
+        <h2 className="text-2xl md:text-4xl font-medium text-white tracking-tight mb-8">
           엑셈의 내일은,
           <br />
           오늘 시작됩니다.
@@ -19,7 +19,7 @@ export default function FooterSection({
         </p>
         <a
           href="#prerequisites"
-          className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-orange-500 text-white font-semibold text-lg hover:bg-orange-600 transition-all hover:scale-105 active:scale-95 shadow-[0_0_40px_rgba(249,115,22,0.3)]"
+          className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full bg-orange-500 text-white font-medium text-lg hover:bg-orange-600 transition-all hover:scale-105 active:scale-95 shadow-[0_0_40px_rgba(249,115,22,0.3)]"
         >
           지금 바로 시작하기
         </a>

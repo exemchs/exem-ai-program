@@ -12,12 +12,12 @@ const shortcuts = [
 export default function ShortcutsSection() {
   return (
     <section className="py-28 bg-zinc-900/30 border-y border-white/5">
-      <div className="max-w-4xl mx-auto px-6">
+      <div className="max-w-5xl mx-auto px-6">
         <SectionHeading subtitle="Shortcuts" align="center">
           Claude Code 핵심 단축키
         </SectionHeading>
 
-        <div className="max-w-4xl mx-auto grid sm:grid-cols-2 gap-4">
+        <div className="max-w-5xl mx-auto grid sm:grid-cols-2 gap-4">
           {shortcuts.map((shortcut, i) => (
             <div
               key={i}

@@ -38,7 +38,7 @@ export default function FAQSection({
               key={i}
               className="group p-6 rounded-2xl bg-black border border-white/5 open:border-orange-500/30 transition-colors cursor-pointer"
             >
-              <summary className="text-lg font-semibold text-white flex justify-between items-center list-none outline-none">
+              <summary className="text-lg font-medium text-white flex justify-between items-center list-none outline-none">
                 {faq.q}
                 <span className="text-orange-400 group-open:rotate-45 transition-transform duration-300 text-2xl leading-none">
                   +
