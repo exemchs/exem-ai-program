@@ -33,7 +33,7 @@ export default function ClaudeParticles() {
     const MAX_FALL_SPEED = 22.0;
     const FUNNEL_PULL = 0.25;
     const NECK_THROUGHPUT = 1;
-    const ROW_DRAIN_TIME = 12; // 한 줄 빠지는 목표 프레임 (~0.2초)
+    const DRAIN_INTERVAL = 2; // 고정 간격 — 모든 행 동일 속도
     const PAUSE_DURATION = 0.8;
     const FADE_DURATION = 0.3;
 
@@ -125,7 +125,6 @@ export default function ClaudeParticles() {
     let ambientDots: AmbientDot[] = [];
     let gridMap: Map<string, SandClump> = new Map();
     let drainCounter = 0;
-    let nextDrainAt = 6;
     let cycleState: "running" | "paused" | "fadeout" | "fadein" = "running";
     let cycleTimer = 0;
     let globalAlpha = 1;
@@ -354,12 +353,6 @@ export default function ClaudeParticles() {
 
       // 즉시 나머지를 중앙으로 compact — 갭 없음
       compactRow(currentBottomRow);
-
-      // 다음 drain 간격: 행 크기에 반비례 (많으면 빠르게, 적으면 느리게)
-      const remaining = rowClumps.length - 1;
-      nextDrainAt = remaining > 0
-        ? Math.max(1, Math.floor(ROW_DRAIN_TIME / (remaining + 1)))
-        : 3;
     }
 
     function updatePhysics(now: number) {
@@ -400,16 +393,11 @@ export default function ClaudeParticles() {
           }
 
           case "shifting": {
-            // 경사면에서 중앙으로 수평 이동
-            const dxToTarget = c.targetX - c.x;
-            const dir = Math.sign(dxToTarget);
-            c.vx += dir * 1.2;
-            c.vx *= 0.78;
-            c.vx = clamp(c.vx, -14.0, 14.0);
-            c.x += c.vx;
+            // 중앙으로 빠르게 이동 (lerp — 진동 없음)
+            const dx = c.targetX - c.x;
+            c.x += dx * 0.35;
 
-            // 도착 판정
-            if (Math.abs(c.x - c.targetX) < 1.5 && Math.abs(c.vx) < 0.3) {
+            if (Math.abs(dx) < 1.0) {
               c.x = c.targetX;
               c.vx = 0;
               c.state = "resting";
@@ -653,7 +641,7 @@ export default function ClaudeParticles() {
 
       if (cycleState === "running") {
         drainCounter++;
-        if (drainCounter >= nextDrainAt) {
+        if (drainCounter >= DRAIN_INTERVAL) {
           drainTick();
           drainCounter = 0;
         }
