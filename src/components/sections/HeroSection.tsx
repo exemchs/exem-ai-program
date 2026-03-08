@@ -1,5 +1,87 @@
+import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
 import { Sun, Moon, Sparkles } from "lucide-react";
+
+// RGB color type
+type RGB = [number, number, number];
+
+// Keyframe gradient definition
+interface GradientKeyframe {
+  progress: number;
+  colors: [RGB, RGB, RGB]; // 3 color stops
+}
+
+const GRADIENT_KEYFRAMES: GradientKeyframe[] = [
+  {
+    progress: 0,
+    colors: [
+      [61, 26, 0],    // #3d1a00
+      [26, 10, 0],    // #1a0a00 (used for both mid and end at 70%)
+      [26, 10, 0],    // #1a0a00
+    ],
+  },
+  {
+    progress: 0.5,
+    colors: [
+      [230, 126, 34], // #e67e22
+      [139, 69, 19],  // #8b4513
+      [45, 24, 16],   // #2d1810
+    ],
+  },
+  {
+    progress: 1,
+    colors: [
+      [254, 249, 240], // #fef9f0
+      [244, 197, 122], // #f4c57a
+      [230, 126, 34],  // #e67e22
+    ],
+  },
+];
+
+function lerpRGB(a: RGB, b: RGB, t: number): RGB {
+  return [
+    Math.round(a[0] + (b[0] - a[0]) * t),
+    Math.round(a[1] + (b[1] - a[1]) * t),
+    Math.round(a[2] + (b[2] - a[2]) * t),
+  ];
+}
+
+function getGradient(progress: number): string {
+  // Find the two keyframes to interpolate between
+  let from = GRADIENT_KEYFRAMES[0];
+  let to = GRADIENT_KEYFRAMES[1];
+  let localT = 0;
+
+  for (let i = 0; i < GRADIENT_KEYFRAMES.length - 1; i++) {
+    if (progress >= GRADIENT_KEYFRAMES[i].progress && progress <= GRADIENT_KEYFRAMES[i + 1].progress) {
+      from = GRADIENT_KEYFRAMES[i];
+      to = GRADIENT_KEYFRAMES[i + 1];
+      const range = to.progress - from.progress;
+      localT = range === 0 ? 0 : (progress - from.progress) / range;
+      break;
+    }
+  }
+
+  const c0 = lerpRGB(from.colors[0], to.colors[0], localT);
+  const c1 = lerpRGB(from.colors[1], to.colors[1], localT);
+  const c2 = lerpRGB(from.colors[2], to.colors[2], localT);
+
+  // Match the keyframe gradient stops
+  // progress 0: 0%, 70% (2 stops)
+  // progress 0.5: 0%, 50%, 100% (3 stops)
+  // progress 1: 0%, 40%, 100% (3 stops)
+  // Interpolate stop positions too
+  const stopMid = 40 + (1 - progress) * 30; // 70% at p=0, 50% at p=0.5, 40% at p=1
+  const rgb = (c: RGB) => `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
+
+  return `radial-gradient(ellipse 80% 60% at 50% 40%, ${rgb(c0)} 0%, ${rgb(c1)} ${stopMid}%, ${rgb(c2)} 100%)`;
+}
+
+function getTextOpacity(progress: number): number {
+  if (progress <= 0.7) return 1;
+  return 1 - (progress - 0.7) / 0.3;
+}
+
 export default function HeroSection({
   isDarkMode,
   onToggleTheme,
@@ -7,70 +89,106 @@ export default function HeroSection({
   isDarkMode: boolean;
   onToggleTheme: () => void;
 }) {
+  const sectionRef = useRef<HTMLElement>(null);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    let rafId: number | null = null;
+
+    const handleScroll = () => {
+      if (rafId !== null) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        const section = sectionRef.current;
+        if (!section) return;
+
+        const { offsetTop, offsetHeight } = section;
+        const scrollY = window.scrollY;
+        const rawProgress = (scrollY - offsetTop) / (offsetHeight - window.innerHeight);
+        setProgress(Math.max(0, Math.min(1, rawProgress)));
+      });
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll(); // initial calculation
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (rafId !== null) cancelAnimationFrame(rafId);
+    };
+  }, []);
+
+  const gradient = getGradient(progress);
+  const textOpacity = getTextOpacity(progress);
+
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      <div className="absolute top-6 right-6 z-50">
-        <motion.button
-          onClick={onToggleTheme}
-          className="relative w-10 h-10 rounded-xl bg-zinc-900/60 border border-white/[0.08] backdrop-blur-md text-zinc-400 hover:text-white hover:border-white/20 hover:bg-zinc-800/80 transition-colors duration-200 cursor-pointer overflow-hidden"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          aria-label="Toggle theme"
-        >
-          <motion.div
-            className="absolute inset-0 flex items-center justify-center"
-            initial={false}
-            animate={{
-              y: isDarkMode ? 0 : -40,
-              opacity: isDarkMode ? 1 : 0,
-            }}
-            transition={{ duration: 0.25, ease: "easeInOut" }}
-          >
-            <Sun size={18} />
-          </motion.div>
-          <motion.div
-            className="absolute inset-0 flex items-center justify-center"
-            initial={false}
-            animate={{
-              y: isDarkMode ? 40 : 0,
-              opacity: isDarkMode ? 0 : 1,
-            }}
-            transition={{ duration: 0.25, ease: "easeInOut" }}
-          >
-            <Moon size={18} />
-          </motion.div>
-        </motion.button>
-      </div>
+    <section ref={sectionRef} className="h-[240vh] relative">
+      {/* Sticky container */}
+      <div className="h-screen w-full sticky top-0 flex items-center justify-center">
+        {/* Gradient background */}
+        <div
+          className="absolute inset-0"
+          style={{ background: gradient }}
+        />
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 w-full flex flex-col items-center text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="max-w-4xl flex flex-col items-center"
+        {/* Theme toggle */}
+        <div className="absolute top-6 right-6 z-50">
+          <motion.button
+            onClick={onToggleTheme}
+            className="relative w-10 h-10 rounded-xl bg-zinc-900/60 border border-white/[0.08] backdrop-blur-md text-zinc-400 hover:text-white hover:border-white/20 hover:bg-zinc-800/80 transition-colors duration-200 cursor-pointer overflow-hidden"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            aria-label="Toggle theme"
+          >
+            <motion.div
+              className="absolute inset-0 flex items-center justify-center"
+              initial={false}
+              animate={{
+                y: isDarkMode ? 0 : -40,
+                opacity: isDarkMode ? 1 : 0,
+              }}
+              transition={{ duration: 0.25, ease: "easeInOut" }}
+            >
+              <Sun size={18} />
+            </motion.div>
+            <motion.div
+              className="absolute inset-0 flex items-center justify-center"
+              initial={false}
+              animate={{
+                y: isDarkMode ? 40 : 0,
+                opacity: isDarkMode ? 0 : 1,
+              }}
+              transition={{ duration: 0.25, ease: "easeInOut" }}
+            >
+              <Moon size={18} />
+            </motion.div>
+          </motion.button>
+        </div>
+
+        {/* Content */}
+        <div
+          className="relative z-10 max-w-7xl mx-auto px-6 w-full flex flex-col items-center text-center"
+          style={{ opacity: textOpacity }}
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-orange-500/30 bg-orange-500/10 text-orange-400 text-sm font-medium mb-8">
-            <Sparkles size={14} />
-            <span>Exem Claude Code Class</span>
+          <div className="max-w-4xl flex flex-col items-center">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-orange-500/30 bg-orange-500/10 text-orange-400 text-sm font-medium mb-8">
+              <Sparkles size={14} />
+              <span>Exem Claude Code Class</span>
+            </div>
+
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tighter text-white leading-[1.1] mb-8">
+              '나중에 해야지' 했던 <br />
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-orange-400 to-amber-200">
+                Claude Code,
+              </span>
+              <br />
+              지금이 기회입니다.
+            </h1>
+
+            <p className="text-xl md:text-2xl text-white/80 font-medium max-w-2xl mx-auto">
+              Claude Code, 같이 시작하면 됩니다.
+            </p>
           </div>
-
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tighter text-white leading-[1.1] mb-8">
-            '나중에 해야지' 했던 <br />
-            <span className="text-transparent bg-clip-text bg-linear-to-r from-orange-400 to-amber-200">
-              Claude Code,
-            </span>
-            <br />
-            지금이 기회입니다.
-          </h1>
-
-          <p className="text-xl md:text-2xl text-white font-medium leading-relaxed max-w-2xl mx-auto">
-            바빠서 미루게 되는 Claude Code, <br />
-            지금 같이 해봅시다.
-            <br />
-            앱에서 채팅하던 때와는 차원이 다른 <br />
-            결과물, 자동화가 실제로 가능해집니다.
-          </p>
-        </motion.div>
+        </div>
       </div>
     </section>
   );
