@@ -30,12 +30,12 @@ export default function App() {
 
       {showNotice && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowNotice(false)}>
-          <div className="bg-white rounded-2xl p-8 max-w-lg w-full mx-6 shadow-2xl">
-            <img src="/imgs/exem-logo.svg" alt="EXEM" className="h-6 mb-5" />
-            <p className="text-[#4B5563] text-sm leading-relaxed mb-3">
+          <div className="bg-white rounded-2xl p-8 max-w-lg w-full mx-6 shadow-2xl text-center">
+            <img src="/imgs/exem-logo.svg" alt="EXEM" className="h-6 mx-auto mb-8" />
+            <p className="text-[#4B5563] text-sm leading-relaxed mb-2">
               본 프로그램은 엑셈 구성원 대상으로 설계되었습니다.
             </p>
-            <p className="text-[#4B5563] text-sm leading-relaxed mb-6">
+            <p className="text-[#4B5563] text-sm leading-relaxed mb-8">
               AI 활용 중급자 이상은 Anthropic 공식 프로그램 <a href="https://anthropic.skilljar.com/" target="_blank" rel="noreferrer" className="text-blue-500 hover:text-blue-600 underline">Skilljar</a>를 추천합니다.
             </p>
             <button
