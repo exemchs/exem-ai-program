@@ -14,16 +14,7 @@ import ReferencePage from "./components/pages/ReferencePage";
 
 export default function App() {
   const [os, setOs] = useState<OsType>("mac");
-  const [isDarkMode, setIsDarkMode] = useState(true);
   const [page, setPage] = useState<"home" | "reference">("home");
-
-  useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.remove("light-theme");
-    } else {
-      document.documentElement.classList.add("light-theme");
-    }
-  }, [isDarkMode]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -35,10 +26,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-black text-zinc-300 font-sans selection:bg-orange-500/30">
-      <HeroSection
-        isDarkMode={isDarkMode}
-        onToggleTheme={() => setIsDarkMode(!isDarkMode)}
-      />
+      <HeroSection />
       <WhyNowSection />
       <WhatWeLearnSection />
       <PrerequisitesSection os={os} onOsChange={setOs} />

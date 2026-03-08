@@ -4,7 +4,7 @@ export default function FooterSection({
   onNavigateReference: () => void;
 }) {
   return (
-    <footer className="py-32 relative overflow-hidden">
+    <footer className="py-40 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-900/20 pointer-events-none"></div>
       <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
         <h2 className="text-4xl md:text-6xl font-bold text-white tracking-tight mb-8">

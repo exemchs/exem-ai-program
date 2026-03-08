@@ -3,7 +3,7 @@ import SectionHeading from "../common/SectionHeading";
 
 export default function OneMoreThingSection() {
   return (
-    <section className="py-32 relative">
+    <section className="py-40 relative">
       <div className="max-w-7xl mx-auto px-6">
         <SectionHeading subtitle="One More Thing">
           하나를 익히면,
@@ -12,7 +12,7 @@ export default function OneMoreThingSection() {
         </SectionHeading>
 
         <div className="grid md:grid-cols-2 gap-8">
-          <div className="p-8 rounded-3xl bg-zinc-900 border border-white/5">
+          <div className="p-8 rounded-3xl bg-zinc-900 border border-white/[0.04]">
             <div className="w-12 h-12 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-400 mb-6">
               <Layers size={24} />
             </div>
@@ -22,14 +22,14 @@ export default function OneMoreThingSection() {
             <p className="text-zinc-400 mb-6">
               여러 Claude Code를 동시에 띄워, 각각 다른 역할을 맡깁니다.
             </p>
-            <div className="p-4 rounded-xl bg-black border border-white/5 font-mono text-sm text-zinc-300">
+            <div className="p-4 rounded-xl bg-black border border-white/[0.04] font-mono text-sm text-zinc-300">
               <span className="text-zinc-500"># 팁: 각각 다른 규칙 설정</span>
               <br />
               CLAUDE.md
             </div>
           </div>
 
-          <div className="p-8 rounded-3xl bg-zinc-900 border border-white/5">
+          <div className="p-8 rounded-3xl bg-zinc-900 border border-white/[0.04]">
             <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400 mb-6">
               <Zap size={24} />
             </div>

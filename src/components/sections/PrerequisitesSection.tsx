@@ -113,7 +113,7 @@ export default function PrerequisitesSection({
   ];
 
   return (
-    <section id="prerequisites" className="py-32 relative">
+    <section id="prerequisites" className="py-40 relative">
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex flex-col items-center mb-16 md:mb-24 gap-8">
           <SectionHeading subtitle="Prerequisites" align="center">

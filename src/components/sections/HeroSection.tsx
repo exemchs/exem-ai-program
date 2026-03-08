@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "motion/react";
-import { Sun, Moon, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 // RGB color type
 type RGB = [number, number, number];
@@ -82,13 +82,7 @@ function getTextOpacity(progress: number): number {
   return 1 - (progress - 0.7) / 0.3;
 }
 
-export default function HeroSection({
-  isDarkMode,
-  onToggleTheme,
-}: {
-  isDarkMode: boolean;
-  onToggleTheme: () => void;
-}) {
+export default function HeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const [progress, setProgress] = useState(0);
 
@@ -129,40 +123,6 @@ export default function HeroSection({
           className="absolute inset-0"
           style={{ background: gradient }}
         />
-
-        {/* Theme toggle */}
-        <div className="absolute top-6 right-6 z-50">
-          <motion.button
-            onClick={onToggleTheme}
-            className="relative w-10 h-10 rounded-xl bg-zinc-900/60 border border-white/[0.08] backdrop-blur-md text-zinc-400 hover:text-white hover:border-white/20 hover:bg-zinc-800/80 transition-colors duration-200 cursor-pointer overflow-hidden"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            aria-label="Toggle theme"
-          >
-            <motion.div
-              className="absolute inset-0 flex items-center justify-center"
-              initial={false}
-              animate={{
-                y: isDarkMode ? 0 : -40,
-                opacity: isDarkMode ? 1 : 0,
-              }}
-              transition={{ duration: 0.25, ease: "easeInOut" }}
-            >
-              <Sun size={18} />
-            </motion.div>
-            <motion.div
-              className="absolute inset-0 flex items-center justify-center"
-              initial={false}
-              animate={{
-                y: isDarkMode ? 40 : 0,
-                opacity: isDarkMode ? 0 : 1,
-              }}
-              transition={{ duration: 0.25, ease: "easeInOut" }}
-            >
-              <Moon size={18} />
-            </motion.div>
-          </motion.button>
-        </div>
 
         {/* Content */}
         <div

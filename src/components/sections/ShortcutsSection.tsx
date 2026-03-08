@@ -11,7 +11,7 @@ const shortcuts = [
 
 export default function ShortcutsSection() {
   return (
-    <section className="py-32 bg-zinc-900/30 border-y border-white/5">
+    <section className="py-40 bg-zinc-900/30 border-y border-white/5">
       <div className="max-w-7xl mx-auto px-6">
         <SectionHeading subtitle="Shortcuts" align="center">
           Claude Code 핵심 단축키

@@ -22,7 +22,7 @@ export default function WhyNowSection() {
   ];
 
   return (
-    <section id="why-now" className="py-32 relative border-t border-white/5">
+    <section id="why-now" className="py-40 relative border-t border-white/5">
       <div className="max-w-7xl mx-auto px-6">
         <SectionHeading subtitle="Why Now">
           왜 지금이 엑셈에서 Claude Code를
@@ -38,7 +38,7 @@ export default function WhyNowSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="p-8 rounded-3xl bg-zinc-900/50 border border-white/5 hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(249,115,22,0.15)] hover:border-orange-500/30 transition-all duration-300 group"
+              className="p-8 rounded-3xl bg-zinc-900/50 border border-white/[0.04] hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(249,115,22,0.08)] hover:border-orange-500/30 transition-all duration-300 group"
             >
               <div className="w-12 h-12 rounded-2xl bg-zinc-800 flex items-center justify-center text-orange-400 mb-6 group-hover:scale-110 transition-transform">
                 {item.icon}
