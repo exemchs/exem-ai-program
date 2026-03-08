@@ -647,8 +647,8 @@ export default function ClaudeParticles() {
     function drawEdge(t: number) {
       for (const ed of edgeDots) {
         const breath = Math.sin(t * ed.speed + ed.phase) * 0.5 + 0.5;
-        const r = ed.baseR * (0.7 + breath * 0.3);
-        const a = (0.3 + breath * 0.15) * globalAlpha;
+        const r = ed.baseR * 1.5 * (0.3 + breath * 0.7);
+        const a = (0.25 + breath * 0.25) * globalAlpha;
         if (a < 0.01) continue;
         ctx.beginPath();
         ctx.arc(ed.x, ed.y, r, 0, PI2);
