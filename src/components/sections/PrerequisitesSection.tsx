@@ -133,7 +133,7 @@ export default function PrerequisitesSection({
               onClick={() => onOsChange("win")}
               className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium transition-all ${os === "win" ? "bg-[#fff3d7] text-[#100d0a] shadow-sm" : "text-[#fff3d7]/55 hover:text-[#fff3d7]"}`}
             >
-              <img src="/imgs/windows-logo.png" alt="Windows" className="w-4 h-4 object-contain" style={os === "win" ? { filter: "brightness(0)" } : {}} /> Windows
+              <img src="/imgs/windows-logo.png" alt="Windows" className="w-4 h-4 object-contain" style={os === "win" ? { filter: "brightness(0)" } : { filter: "brightness(0) invert(1)" }} /> Windows
             </button>
           </div>
         </div>
