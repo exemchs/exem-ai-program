@@ -48,14 +48,11 @@ export default function WhatWeLearnSection() {
               우리가 배우는 건<br />
               코딩이 아닙니다
             </SectionHeading>
-            <div className="space-y-6 mb-12">
-              <p className="text-base text-[#fff3d7]/55 leading-relaxed">
-                코드가 아니라, 일하는 방식을 바꾸는 겁니다.
-              </p>
-              <p className="text-base text-[#fff3d7]/55 leading-relaxed">
-                하고 싶은 일을 말로 전하면 됩니다.
-              </p>
-            </div>
+            <p className="text-base text-[#fff3d7]/55 leading-normal mb-12">
+              코드가 아니라, 일하는 방식을 바꾸는 겁니다.
+              <br />
+              하고 싶은 일을 말로 전하면 됩니다.
+            </p>
 
             <div className="flex flex-col gap-3">
               {tabs.map((tab, idx) => (
