@@ -340,7 +340,7 @@ export default function ClaudeParticles() {
           c.vy = 0;
         }
 
-        currentBottomRow++;
+        // currentBottomRow 유지 — 클럼프들이 한 칸 내려와서 이 행을 채움
         return;
       }
 
