@@ -13,8 +13,8 @@ export default function ClaudeParticles() {
     let cx = 0, cy = 0, hgW = 0, hgH = 0;
 
     // ═══ 색상 ═══
-    const LC = "95, 78, 38";
-    const DC = "210, 192, 140";
+    const LC = "255, 255, 255";
+    const DC = "255, 255, 255";
 
     // ═══ 상수 ═══
     // 덩어리(clump) = 4×4 도트 그리드, 간격 10px → 덩어리 크기 30×30px
@@ -27,11 +27,11 @@ export default function ClaudeParticles() {
     const DOT_RADIUS_MAX = 3.0;
     const MAX_RADIUS = DOT_SPACING * 0.45;
 
-    const GRAVITY = 0.8;
-    const MAX_SLIDE_SPEED = 14.0;
-    const MAX_FUNNEL_SPEED = 16.0;
-    const MAX_FALL_SPEED = 22.0;
-    const FUNNEL_PULL = 0.25;
+    const GRAVITY = 0.4;
+    const MAX_SLIDE_SPEED = 7.0;
+    const MAX_FUNNEL_SPEED = 9.0;
+    const MAX_FALL_SPEED = 12.0;
+    const FUNNEL_PULL = 0.13;
     const NECK_THROUGHPUT = 1;
     const DRAIN_INTERVAL = 2; // 고정 간격 — 모든 행 동일 속도
     const PAUSE_DURATION = 0.8;
@@ -274,22 +274,6 @@ export default function ClaudeParticles() {
 
     function buildAmbient() {
       ambientDots = [];
-      for (let i = 0; i < 20; i++) {
-        const a = Math.random() * PI2;
-        const d = 0.32 + Math.random() * 0.5;
-        const ax = cx + Math.cos(a) * w * d;
-        const ay = cy + Math.sin(a) * h * d * 0.45;
-        for (let j = 0; j < 2 + Math.floor(Math.random() * 4); j++) {
-          ambientDots.push({
-            x: ax + (Math.random() - 0.5) * 45,
-            y: ay + (Math.random() - 0.5) * 45,
-            r: 0.5 + Math.random() * 2.5,
-            phase: Math.random() * PI2,
-            speed: 0.15 + Math.random() * 0.3,
-            alpha: 0.03 + Math.random() * 0.07,
-          });
-        }
-      }
     }
 
     // ═══ Step 2+3: 물리 + 가장자리 슬라이드 ═══
@@ -356,6 +340,31 @@ export default function ClaudeParticles() {
       const resting = clumps.filter(c => c.state === "resting");
       if (resting.length === 0) return;
 
+      // 남은 resting이 2개 이하면 제자리에서 fadeout + 하단에 landed 채움
+      if (resting.length <= 2) {
+        for (const c of resting) {
+          gridMap.delete(gridKey(c.gridRow, c.gridCol));
+          c.state = "fading";
+          c.fadeAlpha = 1;
+          const slot = landingSlots.find(s => !s.taken);
+          if (slot) {
+            slot.taken = true;
+            clumps.push({
+              id: nextId++,
+              x: slot.x, y: slot.y,
+              homeX: slot.x, homeY: slot.y,
+              targetX: slot.x, targetY: slot.y,
+              vx: 0, vy: 0,
+              state: "landed", landedAt: 0,
+              trail: [], dots: makeSubDots(),
+              gridRow: -1, gridCol: -1,
+              settleToY: 0, settleToRow: 0, fadeAlpha: 1,
+            });
+          }
+        }
+        return;
+      }
+
       if (currentBottomRow < 0) {
         currentBottomRow = resting.reduce((max, c) => Math.max(max, c.gridRow), 0);
       }
@@ -405,8 +414,8 @@ export default function ClaudeParticles() {
 
           case "settling": {
             // 한 칸 아래로 중력 낙하 → 도착하면 resting
-            c.vy += GRAVITY * 1.2;
-            c.vy = Math.min(c.vy, 14.0);
+            c.vy += GRAVITY * 0.8;
+            c.vy = Math.min(c.vy, 7.0);
             c.y += c.vy;
 
             if (c.y >= c.settleToY) {
@@ -615,63 +624,50 @@ export default function ClaudeParticles() {
       }
     }
 
-    function drawBackground(t: number) {
+    // 배경 라인용 블루-화이트 틴트
+    const BL = "178, 208, 243";
+
+    function drawBackground(_t: number) {
       const maxR = Math.max(w, h) * 0.65;
+
+      // 동심원
       for (const r of [0.12, 0.24, 0.38, 0.54, 0.72, 0.92]) {
+        const fade = 0.16 * Math.pow(1 - r, 1.7);
         ctx.beginPath();
         ctx.arc(cx, cy, maxR * r, 0, PI2);
-        ctx.strokeStyle = `rgba(${LC}, ${r < 0.4 ? 0.13 : 0.075})`;
+        ctx.strokeStyle = `rgba(${BL}, ${fade})`;
         ctx.lineWidth = r < 0.3 ? 1.3 : 1;
         ctx.stroke();
       }
-      ctx.beginPath();
-      ctx.arc(cx + w * 0.17, cy - h * 0.14, maxR * 0.48, 0, PI2);
-      ctx.strokeStyle = `rgba(${LC}, 0.06)`;
-      ctx.lineWidth = 0.9;
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(cx - w * 0.12, cy + h * 0.19, maxR * 0.62, 0, PI2);
-      ctx.strokeStyle = `rgba(${LC}, 0.04)`;
-      ctx.lineWidth = 0.9;
-      ctx.stroke();
 
-      ctx.strokeStyle = `rgba(${LC}, 0.055)`;
-      ctx.lineWidth = 0.6;
+      // 십자선
+      ctx.lineWidth = 1;
+      const crossGradV = ctx.createLinearGradient(cx, cy - maxR, cx, cy + maxR);
+      crossGradV.addColorStop(0, `rgba(${BL}, 0)`);
+      crossGradV.addColorStop(0.25, `rgba(${BL}, 0.025)`);
+      crossGradV.addColorStop(0.5, `rgba(${BL}, 0.15)`);
+      crossGradV.addColorStop(0.75, `rgba(${BL}, 0.025)`);
+      crossGradV.addColorStop(1, `rgba(${BL}, 0)`);
+      ctx.strokeStyle = crossGradV;
       ctx.beginPath();
       ctx.moveTo(cx, 0);
       ctx.lineTo(cx, h);
       ctx.stroke();
-      ctx.strokeStyle = `rgba(${LC}, 0.04)`;
+
+      const crossGradH = ctx.createLinearGradient(cx - maxR, cy, cx + maxR, cy);
+      crossGradH.addColorStop(0, `rgba(${BL}, 0)`);
+      crossGradH.addColorStop(0.25, `rgba(${BL}, 0.025)`);
+      crossGradH.addColorStop(0.5, `rgba(${BL}, 0.15)`);
+      crossGradH.addColorStop(0.75, `rgba(${BL}, 0.025)`);
+      crossGradH.addColorStop(1, `rgba(${BL}, 0)`);
+      ctx.strokeStyle = crossGradH;
       ctx.beginPath();
       ctx.moveTo(0, cy);
       ctx.lineTo(w, cy);
       ctx.stroke();
-
-      for (const a of [0.5, -0.5, 1.1, -1.1]) {
-        ctx.beginPath();
-        ctx.moveTo(cx - Math.cos(a) * maxR * 1.2, cy - Math.sin(a) * maxR * 1.2);
-        ctx.lineTo(cx + Math.cos(a) * maxR * 1.2, cy + Math.sin(a) * maxR * 1.2);
-        ctx.strokeStyle = `rgba(${LC}, 0.025)`;
-        ctx.lineWidth = 0.5;
-        ctx.stroke();
-      }
-
-      for (let i = 0; i < 3; i++) {
-        const cyc = ((t * 0.055 + i * 4) % 16) / 16;
-        const r = cyc * maxR * 1.3;
-        const a = 0.12 * Math.pow(1 - cyc, 2);
-        if (a > 0.003) {
-          ctx.beginPath();
-          ctx.arc(cx, cy, r, 0, PI2);
-          ctx.strokeStyle = `rgba(140, 118, 50, ${a})`;
-          ctx.lineWidth = 1.4;
-          ctx.stroke();
-        }
-      }
     }
 
-    // 밝은 알갱이용 하이라이트 색상 (DC보다 더 밝은 톤)
-    const EC = "240, 225, 180";
+    const EC = "255, 255, 255";
 
     function drawEdge(t: number) {
       for (const ed of edgeDots) {

@@ -1,31 +1,31 @@
 import { motion } from "motion/react";
-import { Cpu, Layers, Clock } from "lucide-react";
+import { Cpu, Terminal, Clock } from "lucide-react";
 import SectionHeading from "../common/SectionHeading";
 
 export default function WhyNowSection() {
   const items = [
     {
       icon: <Cpu size={24} />,
-      title: "매일 기술을 만드는 사람들",
-      desc: "기술을 만드는 사람이, 도구를 가장 잘 압니다.",
+      title: "매일 기술을 다루는 엑셈",
+      desc: "기술을 만드는 엑셈이,\n도구를 가장 잘 활용합니다.",
     },
     {
-      icon: <Layers size={24} />,
-      title: "앱 채팅을 넘어서는 시점",
-      desc: "채팅은 해봤습니다. 그 다음이 궁금한 시점입니다.",
+      icon: <Terminal size={24} />,
+      title: "복붙이 아닌 즉각 수정",
+      desc: "매번 복사했던 채팅 결과,\n이 도구는 내 파일에 직접 반영합니다.",
     },
     {
       icon: <Clock size={24} />,
-      title: "미루면 격차가 됩니다",
-      desc: "도구는 미루는 순간, 거리가 됩니다.",
+      title: "빠르게 변화하는 AI 트렌드",
+      desc: "매주 쏟아지는 새로운 기능,\n미루면 그만큼 뒤처집니다.",
     },
   ];
 
   return (
-    <section id="why-now" className="py-28 relative border-t border-[#fff3d7]/[0.04]">
+    <section id="why-now" className="py-28 relative">
       <div className="max-w-5xl mx-auto px-6">
         <SectionHeading subtitle="Why Now">
-          최적의 타이밍,
+          AI 적용 타이밍,
           <br />
           왜 지금일까요?
         </SectionHeading>
@@ -38,15 +38,15 @@ export default function WhyNowSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="p-8 rounded-3xl bg-[#fff3d7]/[0.04] border border-[#fff3d7]/[0.04] hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(208,241,0,0.08)] hover:border-[#d0f100]/30 transition-all duration-300 group"
+              className="p-8 rounded-3xl bg-white border border-[#E2E5EB] hover:-translate-y-2 hover:shadow-lg hover:border-[#3B82F6]/30 transition-all duration-300 group"
             >
-              <div className="w-12 h-12 rounded-2xl bg-[#fff3d7]/[0.08] flex items-center justify-center text-[#d0f100] mb-6 group-hover:scale-110 transition-transform">
+              <div className="w-12 h-12 rounded-2xl bg-[#EFF6FF] flex items-center justify-center text-[#3B82F6] mb-6 group-hover:scale-110 transition-transform">
                 {item.icon}
               </div>
-              <h3 className="text-lg font-medium text-[#fff3d7] mb-4">
+              <h3 className="text-lg font-normal text-[#1a2234] mb-4">
                 {item.title}
               </h3>
-              <p className="text-[#fff3d7]/55 leading-relaxed">{item.desc}</p>
+              <p className="text-[#6B7280] leading-relaxed whitespace-pre-line">{item.desc}</p>
             </motion.div>
           ))}
         </div>

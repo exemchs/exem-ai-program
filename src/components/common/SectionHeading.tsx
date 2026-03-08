@@ -18,7 +18,7 @@ const SectionHeading = ({
         initial={{ opacity: 0, y: 10 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="text-[#d0f100] font-mono text-sm tracking-widest uppercase mb-4"
+        className="text-[#6B7280] font-mono text-sm tracking-widest uppercase mb-4"
       >
         {subtitle}
       </motion.p>
@@ -27,7 +27,7 @@ const SectionHeading = ({
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className="text-xl md:text-3xl font-medium tracking-tighter text-[#fff3d7] leading-tight"
+      className="text-xl md:text-3xl font-normal tracking-tighter text-[#1a2234] leading-tight"
     >
       {children}
     </motion.h2>

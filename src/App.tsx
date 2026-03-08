@@ -11,7 +11,10 @@ import FAQSection from "./components/sections/FAQSection";
 import ReferencePage from "./components/pages/ReferencePage";
 
 export default function App() {
-  const [os, setOs] = useState<OsType>("mac");
+  const [os, setOs] = useState<OsType>(() => {
+    const p = navigator.platform.toLowerCase();
+    return p.includes("win") ? "win" : "mac";
+  });
   const [page, setPage] = useState<"home" | "reference">("home");
 
   useEffect(() => {
@@ -23,7 +26,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#100d0a] text-[#fff3d7] font-sans selection:bg-[#d0f100]/30">
+    <div className="min-h-screen bg-[#F8F9FC] text-[#1a2234] font-sans selection:bg-blue-200/50">
       <HeroSection />
       <WhyNowSection />
       <WhatWeLearnSection />

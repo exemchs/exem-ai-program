@@ -11,7 +11,7 @@ const shortcuts = [
 
 export default function ShortcutsSection() {
   return (
-    <section className="py-28 bg-[#fff3d7]/[0.03] border-y border-[#fff3d7]/[0.04]">
+    <section className="py-28">
       <div className="max-w-5xl mx-auto px-6">
         <SectionHeading subtitle="Shortcuts" align="center">
           Claude Code 핵심 단축키
@@ -21,10 +21,10 @@ export default function ShortcutsSection() {
           {shortcuts.map((shortcut, i) => (
             <div
               key={i}
-              className="flex items-center justify-between p-6 rounded-2xl bg-[#100d0a] border border-[#fff3d7]/[0.04] hover:border-[#d0f100]/30 transition-colors"
+              className="flex items-center justify-between p-6 rounded-2xl bg-white border border-[#E2E5EB] hover:border-[#3B82F6]/30 transition-colors"
             >
-              <span className="text-[#fff3d7]/55">{shortcut.desc}</span>
-              <kbd className="px-3 py-1.5 rounded-lg bg-[#fff3d7]/[0.08] border border-[#fff3d7]/[0.08] text-[#d0f100] font-mono text-sm shadow-sm">
+              <span className="text-[#6B7280]">{shortcut.desc}</span>
+              <kbd className="px-3 py-1.5 rounded-lg bg-[#F0F3F9] border border-[#E2E5EB] text-[#3B82F6] font-mono text-sm shadow-sm">
                 {shortcut.key}
               </kbd>
             </div>

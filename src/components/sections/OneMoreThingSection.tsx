@@ -12,38 +12,38 @@ export default function OneMoreThingSection() {
         </SectionHeading>
 
         <div className="grid md:grid-cols-2 gap-8">
-          <div className="p-8 rounded-3xl bg-[#fff3d7]/[0.06] border border-[#fff3d7]/[0.04]">
-            <div className="w-12 h-12 rounded-full bg-[#d0f100]/10 flex items-center justify-center text-[#d0f100] mb-6">
+          <div className="p-8 rounded-3xl bg-white border border-[#E2E5EB]">
+            <div className="w-12 h-12 rounded-full bg-[#EFF6FF] flex items-center justify-center text-[#3B82F6] mb-6">
               <Layers size={24} />
             </div>
-            <h3 className="text-xl font-medium text-[#fff3d7] mb-4">
+            <h3 className="text-xl font-normal text-[#1a2234] mb-4">
               에이전트 팀 만들기
             </h3>
-            <p className="text-[#fff3d7]/55 mb-6">
+            <p className="text-[#6B7280] mb-6">
               여러 Claude Code를 동시에 띄워, 각각 다른 역할을 맡깁니다.
             </p>
-            <div className="p-4 rounded-xl bg-[#100d0a] border border-[#fff3d7]/[0.04] font-mono text-sm text-[#fff3d7]/70">
-              <span className="text-[#fff3d7]/40"># 팁: 각각 다른 규칙 설정</span>
+            <div className="p-4 rounded-xl bg-[#1a1a2e] border border-[#E2E5EB] font-mono text-sm text-white/70">
+              <span className="text-white/40"># 팁: 각각 다른 규칙 설정</span>
               <br />
               CLAUDE.md
             </div>
           </div>
 
-          <div className="p-8 rounded-3xl bg-[#fff3d7]/[0.06] border border-[#fff3d7]/[0.04]">
-            <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400 mb-6">
+          <div className="p-8 rounded-3xl bg-white border border-[#E2E5EB]">
+            <div className="w-12 h-12 rounded-full bg-[#F0FDF4] flex items-center justify-center text-[#10B981] mb-6">
               <Zap size={24} />
             </div>
-            <h3 className="text-xl font-medium text-[#fff3d7] mb-4">
+            <h3 className="text-xl font-normal text-[#1a2234] mb-4">
               나만의 자동화 파이프라인
             </h3>
-            <p className="text-[#fff3d7]/55 mb-6">
+            <p className="text-[#6B7280] mb-6">
               Skill, MCP, CLAUDE.md를 조합해 반복 업무를 자동화합니다.
             </p>
             <a
               href="https://github.com/modelcontextprotocol/servers"
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors"
+              className="inline-flex items-center gap-2 text-sm text-[#10B981] hover:text-[#059669] transition-colors"
             >
               MCP 서버 목록 보기 <ArrowRight size={14} />
             </a>

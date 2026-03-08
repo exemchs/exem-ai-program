@@ -1,96 +1,97 @@
-import { useState } from "react";
-import { BookOpen, Zap, Layers } from "lucide-react";
+import { useState, useCallback } from "react";
+import { FolderOpen, Plug, Repeat } from "lucide-react";
 import SectionHeading from "../common/SectionHeading";
 import Typewriter from "../common/Typewriter";
 
 const terminalContent = [
   {
-    user: "어제 회의록 파일들 전부 읽고, 결정된 사항이랑 오늘 할 일만 뽑아서 markdown으로 정리해줘.",
+    user: "다운로드 폴더에 고객문의 엑셀 파일들 전부 읽고, 제품별로 분류해서 요약 정리해줘.",
     claude: [
-      "네, 회의록을 분석하여 요약하겠습니다.",
-      "Reading files...",
-      "회의록 요약이 완료되었습니다. 결정 사항과 할 일을 markdown 파일로 저장했습니다.",
+      "네, 다운로드 폴더의 엑셀 파일에 접근하겠습니다.",
+      "Reading 12 files from ~/Downloads/고객문의/...",
+      "제품별 요약본을 생성했습니다. MaxGauge 28건, InterMax 15건, exemONE 9건으로 정리 완료.",
     ],
   },
   {
-    user: "이번 주 주간 보고서 데이터를 분석해서 요약해줘.",
+    user: "Notion에 있는 이번 주 회의록 가져와서, 결정사항만 뽑아 Mattermost 채널에 올려줘.",
     claude: [
-      "네, 주간 보고서 데이터를 분석하겠습니다.",
-      "Analyzing data...",
-      "분석이 완료되었습니다. 주요 지표 변화와 인사이트를 요약했습니다.",
+      "네, Notion MCP에 연결하여 회의록을 가져오겠습니다.",
+      "Fetching from Notion → Posting to Mattermost #decisions...",
+      "완료했습니다. 결정사항 5건을 #decisions 채널에 전송했습니다.",
     ],
   },
   {
-    user: "매주 월요일마다 팀원들 주간보고를 수집해서, 부서별로 묶고 요약본을 만들어주는 자동화를 세팅해줘.",
+    user: "매일 아침 9시에 ClickUp 티켓 현황 정리해서 팀 채널에 자동으로 보내는 스크립트 만들어줘.",
     claude: [
-      "네, 주간보고 자동화 파이프라인을 구성하겠습니다.",
-      "Creating automation script...",
-      "완료했습니다. 매주 월요일 팀원 보고서를 수집 → 부서별 분류 → 요약본 생성까지 자동 실행됩니다.",
+      "네, ClickUp API와 Mattermost 연동 자동화 스크립트를 만들겠습니다.",
+      "Creating cron job + automation script...",
+      "완료했습니다. 매일 09:00에 ClickUp 현황이 자동으로 팀 채널에 전송됩니다.",
     ],
   },
 ];
 
 const tabs = [
-  { title: "회의록 → 자동 요약", icon: <BookOpen size={18} /> },
-  { title: "데이터 → 분석 리포트", icon: <Zap size={18} /> },
-  { title: "반복 업무 → 자동화", icon: <Layers size={18} /> },
+  { title: "내 컴퓨터 파일 접근", icon: <FolderOpen size={18} /> },
+  { title: "외부 서비스 연결", icon: <Plug size={18} /> },
+  { title: "반복 업무 자동화", icon: <Repeat size={18} /> },
 ];
 
 export default function WhatWeLearnSection() {
   const [activeTab, setActiveTab] = useState(0);
 
+  const handleComplete = useCallback(() => {
+    setTimeout(() => {
+      setActiveTab((prev) => (prev + 1) % terminalContent.length);
+    }, 2000);
+  }, []);
+
   return (
-    <section className="py-28 bg-[#fff3d7]/[0.03] border-y border-[#fff3d7]/[0.04]">
+    <section className="py-28">
       <div className="max-w-5xl mx-auto px-6">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div>
             <SectionHeading subtitle="What We Learn">
               우리가 배우는 건<br />
-              코딩이 아닙니다
+              기술이 아닌 전략입니다
             </SectionHeading>
-            <p className="text-base text-[#fff3d7]/55 leading-normal mb-12">
-              코드가 아니라, 일하는 방식을 바꾸는 겁니다.
-              <br />
-              하고 싶은 일을 말로 전하면 됩니다.
-            </p>
 
             <div className="flex flex-col gap-3">
               {tabs.map((tab, idx) => (
                 <button
                   key={idx}
                   onClick={() => setActiveTab(idx)}
-                  className={`flex items-center gap-3 px-6 py-4 rounded-2xl border transition-all text-left ${activeTab === idx ? "bg-[#d0f100]/10 border-[#d0f100]/30 text-[#d0f100]" : "bg-[#fff3d7]/[0.04] border-[#fff3d7]/[0.04] text-[#fff3d7]/55 hover:bg-[#fff3d7]/[0.06] hover:text-[#fff3d7]/70"}`}
+                  className={`flex items-center gap-3 px-6 py-4 rounded-2xl border transition-all text-left ${activeTab === idx ? "bg-[#EFF6FF] border-[#3B82F6]/30 text-[#3B82F6]" : "bg-white border-[#E2E5EB] text-[#6B7280] hover:bg-[#F0F3F9] hover:text-[#1a2234]"}`}
                 >
                   {tab.icon}
-                  <span className="font-medium">{tab.title}</span>
+                  <span className="font-normal">{tab.title}</span>
                 </button>
               ))}
             </div>
           </div>
 
           <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-tr from-[#d0f100]/20 to-transparent blur-3xl rounded-full"></div>
-            <div className="relative rounded-2xl border border-[#fff3d7]/[0.08] bg-[#100d0a] overflow-hidden shadow-2xl h-[400px] flex flex-col terminal-window">
-              <div className="h-10 border-b border-[#fff3d7]/[0.08] bg-[#fff3d7]/[0.06] flex items-center px-4 gap-2 shrink-0">
+            <div className="absolute inset-0 bg-gradient-to-tr from-[#3B82F6]/10 to-transparent blur-3xl rounded-full"></div>
+            <div className="relative rounded-2xl border border-[#E2E5EB] bg-[#1a1a2e] overflow-hidden shadow-2xl h-[400px] flex flex-col terminal-window">
+              <div className="h-10 border-b border-white/10 bg-white/5 flex items-center px-4 gap-2 shrink-0">
                 <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
                 <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
                 <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
-                <div className="ml-4 text-xs font-mono text-[#fff3d7]/40">
+                <div className="ml-4 text-xs font-mono text-white/40">
                   claude-code
                 </div>
               </div>
               <div className="p-6 font-mono text-sm overflow-y-auto flex-grow">
                 <div className="flex gap-4 mb-4">
                   <span className="text-[#d0f100]">❯</span>
-                  <span className="text-[#fff3d7]">claude</span>
+                  <span className="text-white">claude</span>
                 </div>
-                <div className="text-[#fff3d7]/55 mb-6">
+                <div className="text-white/55 mb-6">
                   Welcome to Claude Code! I can help you write code, analyze
                   data, and automate tasks.
                 </div>
                 <div className="flex gap-4 mb-6">
                   <span className="text-blue-400 shrink-0">You:</span>
-                  <span className="text-[#fff3d7]/70">
+                  <span className="text-white/70">
                     <Typewriter
                       key={`user-${activeTab}`}
                       text={terminalContent[activeTab].user}
@@ -101,7 +102,7 @@ export default function WhatWeLearnSection() {
                 </div>
                 <div className="flex gap-4">
                   <span className="text-[#d0f100] shrink-0">Claude:</span>
-                  <div className="text-[#fff3d7]/70 space-y-2">
+                  <div className="text-white/70 space-y-2">
                     <p>
                       <Typewriter
                         key={`claude-1-${activeTab}`}
@@ -110,7 +111,7 @@ export default function WhatWeLearnSection() {
                         startDelay={1500}
                       />
                     </p>
-                    <p className="text-[#fff3d7]/40 italic">
+                    <p className="text-white/40 italic">
                       <Typewriter
                         key={`claude-2-${activeTab}`}
                         text={terminalContent[activeTab].claude[1]}
@@ -124,6 +125,7 @@ export default function WhatWeLearnSection() {
                         text={terminalContent[activeTab].claude[2]}
                         delay={20}
                         startDelay={3500}
+                        onComplete={handleComplete}
                       />
                     </p>
                   </div>

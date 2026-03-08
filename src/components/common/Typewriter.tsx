@@ -4,11 +4,13 @@ const Typewriter = ({
   text,
   delay = 50,
   startDelay = 0,
+  onComplete,
 }: {
   text: string;
   delay?: number;
   startDelay?: number;
   key?: string | number;
+  onComplete?: () => void;
 }) => {
   const [currentText, setCurrentText] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -27,8 +29,10 @@ const Typewriter = ({
         setCurrentIndex((prevIndex) => prevIndex + 1);
       }, delay);
       return () => clearTimeout(timeout);
+    } else if (currentIndex === text.length && currentIndex > 0) {
+      onComplete?.();
     }
-  }, [currentIndex, delay, text, started]);
+  }, [currentIndex, delay, text, started, onComplete]);
 
   return <span>{currentText}</span>;
 };

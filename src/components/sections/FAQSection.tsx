@@ -1,22 +1,19 @@
+import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import SectionHeading from "../common/SectionHeading";
 
-const faqs = [
+const items = [
   {
-    q: "결제가 필요한가요?",
-    a: "Cursor는 무료입니다. Claude Pro($20/월) 구독이 필요합니다.",
+    q: "이 프로그램은 왜 만들었나요?",
+    a: "Claude Code가 어렵게만 느껴지는 비전공자를 위해 난이도를 낮춰 구성했습니다.",
   },
   {
-    q: "코딩을 전혀 모르는데 괜찮을까요?",
-    a: "코딩 지식 없이, 한국어로 진행됩니다.",
+    q: "커리큘럼은 어떻게 만들어졌나요?",
+    a: "Claude Code 교육 오픈소스를 참조하여 EXEM 업무 환경에 맞게 재구성했습니다.",
   },
   {
-    q: "중간에 막히면 어떻게 하나요?",
-    a: "에러 메시지를 Claude에게 보여주면 됩니다. 그래도 어려우면 조현서 그룹장에게 문의하세요.",
-  },
-  {
-    q: "Windows 환경에서도 똑같이 되나요?",
-    a: "가능합니다. '사전 세팅'에서 Windows 탭을 확인해주세요.",
+    q: "오류를 발견하면?",
+    a: "조현서 그룹장에게 보고해 주세요.",
   },
 ];
 
@@ -25,34 +22,39 @@ export default function FAQSection({
 }: {
   onNavigateReference: () => void;
 }) {
+  const [openIdx, setOpenIdx] = useState<number | null>(null);
+
   return (
-    <section className="py-40 bg-[#fff3d7]/[0.03] border-y border-[#fff3d7]/[0.04]">
+    <section className="py-40">
       <div className="max-w-3xl mx-auto px-6">
-        <SectionHeading subtitle="FAQ" align="center">
-          자주 묻는 질문
+        <SectionHeading subtitle="INFO" align="center">
+          추가 안내
         </SectionHeading>
 
         <div className="space-y-4 mt-12">
-          {faqs.map((faq, i) => (
-            <details
+          {items.map((item, i) => (
+            <div
               key={i}
-              className="group p-6 rounded-2xl bg-[#100d0a] border border-[#fff3d7]/[0.04] open:border-[#d0f100]/30 transition-colors cursor-pointer"
+              onClick={() => setOpenIdx(openIdx === i ? null : i)}
+              className={`p-6 rounded-2xl bg-white border transition-colors cursor-pointer ${openIdx === i ? "border-[#3B82F6]/30" : "border-[#E2E5EB]"}`}
             >
-              <summary className="text-lg font-medium text-[#fff3d7] flex justify-between items-center list-none outline-none">
-                {faq.q}
-                <span className="text-[#d0f100] group-open:rotate-45 transition-transform duration-300 text-2xl leading-none">
+              <div className="text-lg font-normal text-[#1a2234] flex justify-between items-center">
+                {item.q}
+                <span className={`text-[#3B82F6] transition-transform duration-300 text-2xl leading-none ${openIdx === i ? "rotate-45" : ""}`}>
                   +
                 </span>
-              </summary>
-              <p className="mt-4 text-[#fff3d7]/55 leading-relaxed">{faq.a}</p>
-            </details>
+              </div>
+              {openIdx === i && (
+                <p className="mt-4 text-[#6B7280] leading-relaxed">{item.a}</p>
+              )}
+            </div>
           ))}
         </div>
 
         <div className="mt-12 text-center">
           <button
             onClick={onNavigateReference}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#fff3d7]/[0.06] border border-[#fff3d7]/[0.08] text-[#fff3d7]/70 hover:text-[#fff3d7] hover:border-[#fff3d7]/15 transition-all cursor-pointer"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white border border-[#E2E5EB] text-[#6B7280] hover:text-[#1a2234] hover:border-[#1a2234]/20 transition-all cursor-pointer"
           >
             추천 레퍼런스 보기 <ArrowRight size={16} />
           </button>

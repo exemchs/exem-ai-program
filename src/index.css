@@ -1,16 +1,69 @@
+@font-face {
+  font-family: "Unica77";
+  src: url("/fonts/Unica77LLWeb-Thin.woff2") format("woff2");
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Unica77";
+  src: url("/fonts/Unica77LLWeb-Light.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Unica77";
+  src: url("/fonts/Unica77LLWeb-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Unica77";
+  src: url("/fonts/Unica77LLWeb-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Unica77";
+  src: url("/fonts/Unica77LLWeb-Black.woff2") format("woff2");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 @import url("https://fonts.googleapis.com/css2?family=Asta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap");
 
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Asta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Unica77", "Asta Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
-html {
-  scroll-behavior: smooth;
+@keyframes fillLeft {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
 }
 
-code {
-  font-size: 0.85em;
+@keyframes strokeDraw {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes clipReveal {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0% 0 0); }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-family: "Unica77", "Asta Sans", ui-sans-serif, system-ui, sans-serif;
+  }
+
+  code {
+    font-size: 0.85em;
+  }
 }
