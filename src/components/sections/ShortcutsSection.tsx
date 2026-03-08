@@ -6,7 +6,7 @@ const shortcuts = [
   { key: "/clear", desc: "현재 대화 내용 지우기" },
   { key: "/compact", desc: "컨텍스트 압축하여 메모리 확보" },
   { key: "Ctrl + C", desc: "현재 진행 중인 작업 취소" },
-  { key: "/cost", desc: "현재까지 사용한 토큰 비용 확인" },
+  { key: "/usage", desc: "현재까지 사용한 토큰 비용 확인" },
 ];
 
 export default function ShortcutsSection() {

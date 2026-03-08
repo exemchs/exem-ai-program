@@ -20,7 +20,11 @@ const faqs = [
   },
 ];
 
-export default function FAQSection() {
+export default function FAQSection({
+  onNavigateReference,
+}: {
+  onNavigateReference: () => void;
+}) {
   return (
     <section className="py-32 bg-zinc-900/30 border-y border-white/5">
       <div className="max-w-3xl mx-auto px-6">
@@ -46,14 +50,12 @@ export default function FAQSection() {
         </div>
 
         <div className="mt-12 text-center">
-          <a
-            href="https://blog.huns.site/blog/posts/ai/claude"
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-zinc-900 border border-white/10 text-zinc-300 hover:text-white hover:border-white/30 transition-all"
+          <button
+            onClick={onNavigateReference}
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-zinc-900 border border-white/10 text-zinc-300 hover:text-white hover:border-white/30 transition-all cursor-pointer"
           >
-            더 많은 팁 보기 (blog.huns.site) <ArrowRight size={16} />
-          </a>
+            추천 레퍼런스 보기 <ArrowRight size={16} />
+          </button>
         </div>
       </div>
     </section>

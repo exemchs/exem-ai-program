@@ -1,6 +1,8 @@
 import { AlertCircle, Play } from "lucide-react";
+import { OS_KEYS, type OsType } from "../../constants/os";
 
-export default function TroubleshootingSection({ os }: { os: "mac" | "win" }) {
+export default function TroubleshootingSection({ os }: { os: OsType }) {
+  const keys = OS_KEYS[os];
   return (
     <section className="py-24 bg-orange-500/5 border-y border-orange-500/10">
       <div className="max-w-4xl mx-auto px-6">
@@ -21,10 +23,15 @@ export default function TroubleshootingSection({ os }: { os: "mac" | "win" }) {
               <li>
                 File → Open Folder →{" "}
                 <code className="text-orange-300 bg-orange-500/10 px-1.5 py-0.5 rounded">
-                  exem-ai-curriculum-program
+                  exem-claude-code-class
                 </code>
               </li>
-              <li>Cmd+J / Ctrl+J 터미널 열기</li>
+              <li>
+                <code className="text-orange-300 bg-orange-500/10 px-1.5 py-0.5 rounded">
+                  {keys.openTerminal}
+                </code>{" "}
+                터미널 열기
+              </li>
               <li>
                 <code className="text-orange-300 bg-orange-500/10 px-1.5 py-0.5 rounded">
                   claude
@@ -51,14 +58,20 @@ export default function TroubleshootingSection({ os }: { os: "mac" | "win" }) {
             </p>
             <ul className="list-disc list-inside text-zinc-400 space-y-2">
               <li>
-                방법 1: {os === "mac" ? "macOS라면" : "Windows라면"}{" "}
+                방법 1: {keys.osLabel}라면{" "}
                 <code className="text-orange-300 bg-orange-500/10 px-1.5 py-0.5 rounded">
-                  {os === "mac" ? "source ~/.zshrc" : "source ~/.bashrc"}
+                  {keys.shellReload}
                 </code>{" "}
                 또는 터미널 재시작
               </li>
               <li>방법 2: Claude Code 재설치</li>
-              <li>방법 3: Cursor를 완전히 종료(Cmd+Q / Alt+F4) 후 다시 실행</li>
+              <li>
+                방법 3: Cursor를 완전히 종료(
+                <code className="text-orange-300 bg-orange-500/10 px-1.5 py-0.5 rounded">
+                  {keys.quit}
+                </code>
+                ) 후 다시 실행
+              </li>
             </ul>
           </div>
         </div>

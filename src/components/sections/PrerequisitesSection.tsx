@@ -9,14 +9,16 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import SectionHeading from "../common/SectionHeading";
+import { OS_KEYS, type OsType } from "../../constants/os";
 
 export default function PrerequisitesSection({
   os,
   onOsChange,
 }: {
-  os: "mac" | "win";
-  onOsChange: (os: "mac" | "win") => void;
+  os: OsType;
+  onOsChange: (os: OsType) => void;
 }) {
+  const keys = OS_KEYS[os];
   const cards = [
     {
       step: "①",
@@ -65,10 +67,8 @@ export default function PrerequisitesSection({
     },
     {
       title: "터미널 열기",
-      desc:
-        os === "mac"
-          ? "Cursor 안에서 터미널을 엽니다. (Cmd+J)"
-          : "Cursor 안에서 터미널을 엽니다. (Ctrl+J)",
+      desc: `Cursor 안에서 터미널을 엽니다.`,
+      shortcut: keys.openTerminal,
       code: null,
       tip: "✓ 화면 하단에 검은 배경의 터미널 창이 뜨면 성공입니다.",
       image: "/imgs/installation/step2.png",
@@ -189,7 +189,20 @@ export default function PrerequisitesSection({
                   <h4 className="text-xl font-semibold text-white mb-2">
                     {step.title}
                   </h4>
-                  <p className="text-zinc-400 mb-4">{step.desc}</p>
+                  <p className="text-zinc-400 mb-4">
+                    {step.desc}
+                    {/* @ts-ignore */}
+                    {step.shortcut && (
+                      <>
+                        {" ("}
+                        <code className="text-orange-300 bg-orange-500/10 px-1.5 py-0.5 rounded">
+                          {/* @ts-ignore */}
+                          {step.shortcut}
+                        </code>
+                        {")"}
+                      </>
+                    )}
+                  </p>
 
                   {step.image && (
                     <div className="mb-4 rounded-xl overflow-hidden border border-white/10 bg-zinc-800/50 relative">

@@ -12,6 +12,10 @@ html {
   scroll-behavior: smooth;
 }
 
+code {
+  font-size: 0.85em;
+}
+
 /* Hide Unicorn Studio Logo */
 a[href*="unicorn.studio"] {
   display: none !important;
@@ -19,13 +23,16 @@ a[href*="unicorn.studio"] {
 
 .light-theme {
   filter: invert(1) hue-rotate(180deg);
-  background-color: #f5f5f5;
+  background-color: #ffffff;
 }
 
 .light-theme img,
 .light-theme video,
-.light-theme [data-us-project],
 .light-theme .terminal-window,
 .light-theme .revert-theme {
   filter: invert(1) hue-rotate(180deg);
+}
+
+.light-theme [data-us-project] {
+  display: none !important;
 }

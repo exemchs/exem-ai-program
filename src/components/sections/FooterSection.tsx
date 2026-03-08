@@ -1,6 +1,8 @@
-import { ArrowRight } from "lucide-react";
-
-export default function FooterSection() {
+export default function FooterSection({
+  onNavigateReference,
+}: {
+  onNavigateReference: () => void;
+}) {
   return (
     <footer className="py-32 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-900/20 pointer-events-none"></div>
@@ -23,17 +25,15 @@ export default function FooterSection() {
         </a>
 
         <div className="mt-32 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-zinc-500">
-          <div>© 2026 EXEM · Claude Code AI Training</div>
+          <div>© 2026 Exem · Claude Code AI Training</div>
           <div className="flex items-center gap-6">
             <span>피드백/오류 보고 → 조현서 그룹장</span>
-            <a
-              href="https://blog.huns.site/blog/posts/ai/claude"
-              target="_blank"
-              rel="noreferrer"
-              className="hover:text-white transition-colors"
+            <button
+              onClick={onNavigateReference}
+              className="hover:text-white transition-colors cursor-pointer"
             >
-              추가 팁 → blog.huns.site
-            </a>
+              추천 레퍼런스 →
+            </button>
           </div>
         </div>
       </div>
