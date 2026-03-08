@@ -31,6 +31,7 @@ export default function App() {
       {showNotice && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowNotice(false)}>
           <div className="bg-white rounded-2xl p-8 max-w-lg w-full mx-6 shadow-2xl">
+            <img src="/imgs/exem-logo.svg" alt="EXEM" className="h-6 mb-5" />
             <p className="text-[#4B5563] text-sm leading-relaxed mb-3">
               본 프로그램은 엑셈 구성원 대상으로 설계되었습니다.
             </p>
