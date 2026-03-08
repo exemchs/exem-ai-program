@@ -224,15 +224,25 @@ export default function ClaudeParticles() {
     function buildEdgeDots() {
       edgeDots = [];
       const steps = 120;
+      // 3줄: 0 = 프로파일 위, +4px, +8px (바깥으로)
+      const offsets = [0, 4, 9];
       for (let i = 0; i <= steps; i++) {
         const ny = -1 + (2 * i) / steps;
         const pw = hgProfile(ny) * hgW;
         const py = cy + ny * hgH;
-        const br = 1.0 + Math.random() * 0.8;
-        const ph = Math.random() * PI2;
-        const sp = 0.3 + Math.random() * 0.6;
-        edgeDots.push({ x: cx + pw, y: py, baseR: br, phase: ph, speed: sp });
-        edgeDots.push({ x: cx - pw, y: py, baseR: br, phase: ph + 1, speed: sp });
+
+        for (let layer = 0; layer < offsets.length; layer++) {
+          const off = offsets[layer];
+          // 바깥 줄일수록 약간 작고 옅어짐
+          const layerScale = 1 - layer * 0.2;
+          const br = (1.0 + Math.random() * 0.8) * layerScale;
+          const ph = Math.random() * PI2;
+          const sp = 0.3 + Math.random() * 0.6;
+          // 간헐적 빈칸 (바깥줄일수록 더 듬성듬성)
+          if (layer > 0 && Math.random() > 0.7) continue;
+          edgeDots.push({ x: cx + pw + off, y: py, baseR: br, phase: ph, speed: sp });
+          edgeDots.push({ x: cx - pw - off, y: py, baseR: br, phase: ph + 1, speed: sp });
+        }
       }
     }
 
