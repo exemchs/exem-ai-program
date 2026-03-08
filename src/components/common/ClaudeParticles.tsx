@@ -62,7 +62,7 @@ export default function ClaudeParticles() {
     //
     // clump가 통째로 state 전이: resting → sliding → funneling → falling → landed
 
-    type ClumpState = "resting" | "sliding" | "funneling" | "falling" | "landed";
+    type ClumpState = "resting" | "sliding" | "settling" | "funneling" | "falling" | "landed";
 
     interface SubDot {
       lx: number;  // clump 중심 기준 로컬 x
@@ -90,6 +90,9 @@ export default function ClaudeParticles() {
       // 그리드 좌표 (clump 단위)
       gridRow: number;
       gridCol: number;
+      // settling: 한 칸 아래로 내려갈 목표
+      settleToY: number;
+      settleToRow: number;
     }
 
     interface LandingSlot {
@@ -187,6 +190,8 @@ export default function ClaudeParticles() {
             dots: makeSubDots(),
             gridRow: row,
             gridCol: col,
+            settleToY: 0,
+            settleToRow: 0,
           };
 
           clumps.push(clump);
@@ -275,29 +280,24 @@ export default function ClaudeParticles() {
 
     // ═══ 드레인 시스템 ═══
     //
-    // 항상 가장 아래 resting 행에서 바깥쪽부터 좌/우 교대로 1개씩 빠짐
-    // 행이 비면 그 윗 행이 자동으로 새 바닥행
-    // → 자연스럽게 V자가 아래→위로 진행
+    // draining: 바닥행에서 바깥쪽부터 좌/우 교대로 1개씩 sliding
+    // settling: 바닥행이 비면 윗줄에서 1개씩 교대로 한 칸 아래로 내려옴
+    //           내려와서 resting → 다시 draining
 
     let nextSide: "left" | "right" = "left";
+    let drainPhase: "draining" | "settling" = "draining";
+    let currentBottomRow = -1;
 
-    function drainTick() {
-      const resting = clumps.filter(c => c.state === "resting");
-      if (resting.length === 0) return;
-
-      // 가장 아래 행 찾기
-      const bottomRow = resting.reduce((max, c) => Math.max(max, c.gridRow), 0);
-      const rowClumps = resting.filter(c => c.gridRow === bottomRow);
-
-      // 행 내에서 바깥쪽부터 (경사면 끝부터)
-      // 왼쪽: 가장 왼쪽(외곽) 먼저  |  오른쪽: 가장 오른쪽(외곽) 먼저
-      const leftClumps = rowClumps
+    function pickAlternating(
+      list: SandClump[],
+      outerFirst: boolean
+    ): SandClump | null {
+      const leftClumps = list
         .filter(c => c.x < cx)
-        .sort((a, b) => a.x - b.x); // 가장 왼쪽(외곽) 먼저
-
-      const rightClumps = rowClumps
+        .sort((a, b) => outerFirst ? a.x - b.x : b.x - a.x);
+      const rightClumps = list
         .filter(c => c.x >= cx)
-        .sort((a, b) => b.x - a.x); // 가장 오른쪽(외곽) 먼저
+        .sort((a, b) => outerFirst ? b.x - a.x : a.x - b.x);
 
       let picked: SandClump | null = null;
 
@@ -314,11 +314,81 @@ export default function ClaudeParticles() {
         picked = rightClumps[0];
         nextSide = "left";
       }
+      return picked;
+    }
 
-      if (picked) {
-        picked.state = "sliding";
-        assignLandingSlot(picked);
-        gridMap.delete(gridKey(picked.gridRow, picked.gridCol));
+    function drainTick() {
+      const resting = clumps.filter(c => c.state === "resting");
+      if (resting.length === 0) return;
+
+      if (currentBottomRow < 0) {
+        currentBottomRow = resting.reduce((max, c) => Math.max(max, c.gridRow), 0);
+      }
+
+      if (drainPhase === "draining") {
+        const rowClumps = resting.filter(c => c.gridRow === currentBottomRow);
+
+        if (rowClumps.length === 0) {
+          // 바닥행이 비었으면 → settling 모드
+          drainPhase = "settling";
+          nextSide = "left";
+          drainTick(); // 바로 settling 시작
+          return;
+        }
+
+        // 바깥쪽부터 좌/우 교대
+        const picked = pickAlternating(rowClumps, true);
+        if (picked) {
+          picked.state = "sliding";
+          assignLandingSlot(picked);
+          gridMap.delete(gridKey(picked.gridRow, picked.gridCol));
+        }
+
+      } else {
+        // settling: 윗줄에서 1개씩 한 칸 아래로
+        const aboveRow = currentBottomRow - 1;
+        const aboveClumps = resting.filter(c => c.gridRow === aboveRow);
+
+        if (aboveClumps.length === 0) {
+          // 윗줄도 비면 → 다시 draining, 새 바닥행 찾기
+          const stillResting = clumps.filter(c => c.state === "resting");
+          if (stillResting.length === 0) return;
+          currentBottomRow = stillResting.reduce((max, c) => Math.max(max, c.gridRow), 0);
+          drainPhase = "draining";
+          nextSide = "left";
+          return;
+        }
+
+        // 바깥쪽부터 1개 선택
+        const picked = pickAlternating(aboveClumps, true);
+        if (picked) {
+          const newY = picked.y + CLUMP_STEP;
+          const maxXAtNew = hgMaxXAtY(newY) * 0.85;
+
+          gridMap.delete(gridKey(picked.gridRow, picked.gridCol));
+
+          if (maxXAtNew > CLUMP_SIZE && Math.abs(picked.x - cx) <= maxXAtNew) {
+            // hourglass 안 → settling (한 칸 아래로 떨어져서 resting)
+            picked.state = "settling";
+            picked.settleToY = newY;
+            picked.settleToRow = currentBottomRow;
+            picked.vy = 0;
+          } else {
+            // hourglass 밖 → sliding으로 목을 향해 빠짐
+            picked.state = "sliding";
+            assignLandingSlot(picked);
+          }
+        }
+
+        // 윗줄 다 내려왔으면 → 새 바닥행 drain 시작
+        const remainAbove = clumps.filter(c =>
+          c.state === "resting" && c.gridRow === aboveRow
+        );
+        if (remainAbove.length === 0) {
+          currentBottomRow = aboveRow;
+          drainPhase = "draining";
+          nextSide = "left";
+        }
       }
     }
 
@@ -333,6 +403,24 @@ export default function ClaudeParticles() {
         switch (c.state) {
           case "resting":
             break;
+
+          case "settling": {
+            // 한 칸 아래로 중력 낙하 → 도착하면 resting
+            c.vy += GRAVITY * 0.6;
+            c.vy = Math.min(c.vy, 3.0);
+            c.y += c.vy;
+
+            if (c.y >= c.settleToY) {
+              c.y = c.settleToY;
+              c.vy = 0;
+              c.vx = 0;
+              c.state = "resting";
+              c.gridRow = c.settleToRow;
+              c.homeY = c.settleToY;
+              gridMap.set(gridKey(c.gridRow, c.gridCol), c);
+            }
+            break;
+          }
 
           case "sliding": {
             // 아래+중앙 방향으로 미끄러짐
@@ -603,6 +691,8 @@ export default function ClaudeParticles() {
           landingSlots.forEach(s => s.taken = false);
           drainedPositions.clear();
           nextSide = "left";
+          drainPhase = "draining";
+          currentBottomRow = -1;
           drainCounter = 0;
           cycleState = "fadein";
           cycleTimer = 0;
