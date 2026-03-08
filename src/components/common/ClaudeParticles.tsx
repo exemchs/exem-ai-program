@@ -289,6 +289,7 @@ export default function ClaudeParticles() {
     let currentBottomRow = -1;
 
     // 바닥행의 남은 덩어리를 cx 기준으로 갭 없이 재배치 (즉시 shifting)
+    // hourglass bounds 밖으로 나가는 clump은 즉시 제거
     function compactRow(rowNum: number) {
       const rowClumps = clumps.filter(
         c => c.gridRow === rowNum && (c.state === "resting" || c.state === "shifting")
@@ -298,12 +299,24 @@ export default function ClaudeParticles() {
       // 현재 x 순서대로 정렬
       rowClumps.sort((a, b) => a.x - b.x);
 
+      // 이 Y에서 허용되는 최대 폭
+      const maxXAtY = hgMaxXAtY(rowClumps[0].y) * 0.85;
+
       // cx 중심으로 빈틈 없이 재배치
       const totalWidth = (rowClumps.length - 1) * CLUMP_STEP;
       const startX = cx - totalWidth / 2;
 
       for (let i = 0; i < rowClumps.length; i++) {
         const newX = startX + i * CLUMP_STEP;
+
+        // bounds 체크: 새 위치가 hourglass 밖이면 즉시 제거
+        if (maxXAtY <= 0 || Math.abs(newX - cx) > maxXAtY) {
+          gridMap.delete(gridKey(rowClumps[i].gridRow, rowClumps[i].gridCol));
+          rowClumps[i].state = "fading";
+          rowClumps[i].fadeAlpha = 0;
+          continue;
+        }
+
         if (Math.abs(rowClumps[i].x - newX) > 2) {
           gridMap.delete(gridKey(rowClumps[i].gridRow, rowClumps[i].gridCol));
           rowClumps[i].state = "shifting";
@@ -315,8 +328,8 @@ export default function ClaudeParticles() {
     }
 
     function drainTick() {
-      // settling/fading 중이면 대기
-      if (clumps.some(c => c.state === "settling")) return;
+      // settling/shifting 중이면 대기
+      if (clumps.some(c => c.state === "settling" || c.state === "shifting")) return;
 
       const resting = clumps.filter(c => c.state === "resting");
       if (resting.length === 0) return;
@@ -340,12 +353,23 @@ export default function ClaudeParticles() {
         }
 
         // 윗줄 전체 한 칸 아래로
+        // 새 Y에서 bounds 밖이면 즉시 제거 (settling 시작 안 함)
+        const newY = aboveClumps[0].y + CLUMP_STEP;
+        const maxXAtNewY = hgMaxXAtY(newY) * 0.85;
+
         for (const c of aboveClumps) {
           gridMap.delete(gridKey(c.gridRow, c.gridCol));
-          c.state = "settling";
-          c.settleToY = c.y + CLUMP_STEP;
-          c.settleToRow = currentBottomRow;
-          c.vy = 0;
+
+          if (maxXAtNewY <= 0 || Math.abs(c.x - cx) > maxXAtNewY) {
+            // bounds 밖 → 즉시 사라짐
+            c.state = "fading";
+            c.fadeAlpha = 0; // 즉각 제거
+          } else {
+            c.state = "settling";
+            c.settleToY = c.y + CLUMP_STEP;
+            c.settleToRow = currentBottomRow;
+            c.vy = 0;
+          }
         }
 
         currentBottomRow = aboveRow;
@@ -390,11 +414,11 @@ export default function ClaudeParticles() {
               c.gridRow = c.settleToRow;
               c.homeY = c.settleToY;
 
-              // 새 위치가 hourglass edge 밖이면 → fadeout으로 자연스럽게 사라짐
+              // 새 위치가 hourglass edge 밖이면 → 즉시 제거
               const maxXAtNewY = hgMaxXAtY(c.y) * 0.85;
               if (maxXAtNewY <= 0 || Math.abs(c.x - cx) > maxXAtNewY) {
                 c.state = "fading";
-                c.fadeAlpha = 1;
+                c.fadeAlpha = 0;
               } else {
                 c.state = "resting";
                 gridMap.set(gridKey(c.gridRow, c.gridCol), c);
@@ -403,16 +427,9 @@ export default function ClaudeParticles() {
             break;
           }
 
-          case "fading": {
-            // edge 밖 덩어리가 자연스럽게 사라짐
-            c.fadeAlpha -= 0.02;
-            // 내려오면서 살짝 아래로 + 바깥으로 흩어짐
-            c.vy += GRAVITY * 0.2;
-            c.y += c.vy;
-            const fadeDir = c.x < cx ? -0.3 : 0.3;
-            c.x += fadeDir;
+          case "fading":
+            // edge 밖 덩어리 — 즉시 제거, 움직임 없음
             break;
-          }
 
           case "shifting": {
             // 경사면에서 중앙으로 수평 이동
