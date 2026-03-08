@@ -28,34 +28,36 @@ export default function HeroSection() {
     };
   }, []);
 
-  // Text 1: visible at start, fade out as we scroll
-  const text1Opacity = progress <= 0.3 ? 1 : progress >= 0.45 ? 0 : 1 - (progress - 0.3) / 0.15;
-  // Text 2: fade in after text 1 is gone
-  const text2Opacity = progress <= 0.5 ? 0 : progress >= 0.65 ? 1 : (progress - 0.5) / 0.15;
+  // Text 1: visible immediately, fade out mid-scroll
+  const text1Opacity = progress <= 0.25 ? 1 : progress >= 0.4 ? 0 : 1 - (progress - 0.25) / 0.15;
+  // Text 2: fade in after text 1 gone
+  const text2Opacity = progress <= 0.45 ? 0 : progress >= 0.6 ? 1 : (progress - 0.45) / 0.15;
+  // Text 2 color: interpolate white → dark as background brightens
+  const text2Color = progress <= 0.6
+    ? "rgb(255,255,255)"
+    : `rgb(${Math.round(255 - (progress - 0.6) / 0.4 * 225)},${Math.round(255 - (progress - 0.6) / 0.4 * 230)},${Math.round(255 - (progress - 0.6) / 0.4 * 220)})`;
 
   return (
     <section
       ref={sectionRef}
-      className="h-[300vh] relative overflow-hidden"
+      className="h-[200vh] relative"
       style={{
         background: `linear-gradient(180deg,
           #1a0a00 0%,
-          #2d1810 12%,
-          #6b3410 25%,
-          #8b4513 35%,
-          #c4692e 48%,
+          #3d1a00 20%,
+          #8b4513 40%,
           #e67e22 60%,
-          #f4c57a 78%,
+          #f4c57a 80%,
           #fef9f0 100%)`,
       }}
     >
-      {/* Sticky container — stays fixed on screen */}
+      {/* Sticky container */}
       <div className="h-screen w-full sticky top-0 flex items-center justify-center">
 
-        {/* Text Group 1 — white on dark background */}
+        {/* Text Group 1 */}
         <div
           className="absolute inset-0 flex flex-col items-center justify-center px-6"
-          style={{ opacity: text1Opacity, pointerEvents: text1Opacity === 0 ? "none" : "auto" }}
+          style={{ opacity: text1Opacity }}
         >
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-semibold tracking-tighter text-white leading-[1.1] text-center">
             AI,{" "}
@@ -68,12 +70,15 @@ export default function HeroSection() {
           </h1>
         </div>
 
-        {/* Text Group 2 — dark on light background */}
+        {/* Text Group 2 */}
         <div
           className="absolute inset-0 flex flex-col items-center justify-center px-6"
-          style={{ opacity: text2Opacity, pointerEvents: text2Opacity === 0 ? "none" : "auto" }}
+          style={{ opacity: text2Opacity }}
         >
-          <h2 className="text-4xl md:text-6xl lg:text-7xl font-semibold tracking-tighter text-zinc-900 leading-[1.1] text-center">
+          <h2
+            className="text-4xl md:text-6xl lg:text-7xl font-semibold tracking-tighter leading-[1.1] text-center"
+            style={{ color: text2Color }}
+          >
             기술과 개발을 몰라도
             <br />
             누구나 할 수 있습니다.
