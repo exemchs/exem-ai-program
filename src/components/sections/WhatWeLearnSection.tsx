@@ -40,8 +40,8 @@ export default function WhatWeLearnSection() {
   const [activeTab, setActiveTab] = useState(0);
 
   return (
-    <section className="py-40 bg-zinc-900/30 border-y border-white/5">
-      <div className="max-w-7xl mx-auto px-6">
+    <section className="py-28 bg-zinc-900/30 border-y border-white/5">
+      <div className="max-w-4xl mx-auto px-6">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div>
             <SectionHeading subtitle="What We Learn">
@@ -49,10 +49,10 @@ export default function WhatWeLearnSection() {
               코딩이 아닙니다
             </SectionHeading>
             <div className="space-y-6 mb-12">
-              <p className="text-xl text-zinc-400 leading-relaxed">
+              <p className="text-base text-zinc-400 leading-relaxed">
                 코드가 아니라, 일하는 방식을 바꾸는 겁니다.
               </p>
-              <p className="text-xl text-zinc-400 leading-relaxed">
+              <p className="text-base text-zinc-400 leading-relaxed">
                 하고 싶은 일을 말로 전하면 됩니다.
               </p>
             </div>

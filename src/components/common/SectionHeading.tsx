@@ -11,7 +11,7 @@ const SectionHeading = ({
   align?: "left" | "center";
 }) => (
   <div
-    className={`mb-20 md:mb-28 ${align === "center" ? "text-center flex flex-col items-center" : ""}`}
+    className={`mb-12 md:mb-16 ${align === "center" ? "text-center flex flex-col items-center" : ""}`}
   >
     {subtitle && (
       <motion.p
@@ -27,7 +27,7 @@ const SectionHeading = ({
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className="text-3xl md:text-5xl font-semibold tracking-tighter text-white leading-tight"
+      className="text-xl md:text-3xl font-medium tracking-tighter text-white leading-tight"
     >
       {children}
     </motion.h2>

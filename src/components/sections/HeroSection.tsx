@@ -126,16 +126,16 @@ export default function HeroSection() {
 
         {/* Content */}
         <div
-          className="relative z-10 max-w-7xl mx-auto px-6 w-full flex flex-col items-center text-center"
+          className="relative z-10 max-w-3xl mx-auto px-6 w-full flex flex-col items-center text-center"
           style={{ opacity: textOpacity }}
         >
-          <div className="max-w-4xl flex flex-col items-center">
+          <div className="flex flex-col items-center">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-orange-500/30 bg-orange-500/10 text-orange-400 text-sm font-medium mb-8">
               <Sparkles size={14} />
               <span>Exem Claude Code Class</span>
             </div>
 
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tighter text-white leading-[1.1] mb-8">
+            <h1 className="text-3xl md:text-5xl font-semibold tracking-tighter text-white leading-[1.1] mb-8">
               '나중에 해야지' 했던 <br />
               <span className="text-transparent bg-clip-text bg-linear-to-r from-orange-400 to-amber-200">
                 Claude Code,
@@ -144,7 +144,7 @@ export default function HeroSection() {
               지금이 기회입니다.
             </h1>
 
-            <p className="text-xl md:text-2xl text-white/80 font-medium max-w-2xl mx-auto">
+            <p className="text-lg md:text-xl text-white/60 font-normal max-w-2xl mx-auto">
               Claude Code, 같이 시작하면 됩니다.
             </p>
           </div>

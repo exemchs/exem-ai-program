@@ -4,15 +4,15 @@ export default function FooterSection({
   onNavigateReference: () => void;
 }) {
   return (
-    <footer className="py-40 relative overflow-hidden">
+    <footer className="py-28 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-b from-transparent to-orange-900/20 pointer-events-none"></div>
-      <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
-        <h2 className="text-4xl md:text-6xl font-bold text-white tracking-tight mb-8">
+      <div className="max-w-4xl mx-auto px-6 relative z-10 text-center">
+        <h2 className="text-2xl md:text-4xl font-bold text-white tracking-tight mb-8">
           엑셈의 내일은,
           <br />
           오늘 시작됩니다.
         </h2>
-        <p className="text-xl text-zinc-400 mb-12 max-w-2xl mx-auto">
+        <p className="text-base text-zinc-400 mb-12 max-w-2xl mx-auto">
           처음이라 같이 합니다.
           <br />
           그래서 쉬워집니다.

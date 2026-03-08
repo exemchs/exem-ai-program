@@ -41,9 +41,9 @@ export default function CurriculumSection() {
   return (
     <section
       id="curriculum"
-      className="py-40 bg-zinc-900/30 border-y border-white/5"
+      className="py-28 bg-zinc-900/30 border-y border-white/5"
     >
-      <div className="max-w-7xl mx-auto px-6">
+      <div className="max-w-4xl mx-auto px-6">
         <SectionHeading subtitle="Curriculum">
           하루 1시간씩,
           <br />딱 5일이면 충분합니다

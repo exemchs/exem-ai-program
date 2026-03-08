@@ -3,8 +3,8 @@ import SectionHeading from "../common/SectionHeading";
 
 export default function OneMoreThingSection() {
   return (
-    <section className="py-40 relative">
-      <div className="max-w-7xl mx-auto px-6">
+    <section className="py-28 relative">
+      <div className="max-w-4xl mx-auto px-6">
         <SectionHeading subtitle="One More Thing">
           하나를 익히면,
           <br />
@@ -16,7 +16,7 @@ export default function OneMoreThingSection() {
             <div className="w-12 h-12 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-400 mb-6">
               <Layers size={24} />
             </div>
-            <h3 className="text-2xl font-semibold text-white mb-4">
+            <h3 className="text-xl font-semibold text-white mb-4">
               에이전트 팀 만들기
             </h3>
             <p className="text-zinc-400 mb-6">
@@ -33,7 +33,7 @@ export default function OneMoreThingSection() {
             <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400 mb-6">
               <Zap size={24} />
             </div>
-            <h3 className="text-2xl font-semibold text-white mb-4">
+            <h3 className="text-xl font-semibold text-white mb-4">
               나만의 자동화 파이프라인
             </h3>
             <p className="text-zinc-400 mb-6">
