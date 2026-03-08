@@ -25,9 +25,9 @@ export default function WhyNowSection() {
     <section id="why-now" className="py-28 relative border-t border-white/5">
       <div className="max-w-4xl mx-auto px-6">
         <SectionHeading subtitle="Why Now">
-          왜 지금이 엑셈에서 Claude Code를
+          최적의 타이밍,
           <br />
-          활용하기 최적의 타이밍인가?
+          왜 지금일까요?
         </SectionHeading>
 
         <div className="grid md:grid-cols-3 gap-8">
