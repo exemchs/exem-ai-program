@@ -273,126 +273,31 @@ export default function ClaudeParticles() {
       return false;
     }
 
-    // ═══ 행 단위 드레인 시스템 ═══
+    // ═══ 드레인 시스템 ═══
     //
-    // 1) 현재 바닥행(currentDrainRow)에서 좌/우 교대로 1개씩 빠짐
-    // 2) 바닥행이 텅 비면 → 윗줄이 한 칸 내려옴 (settle)
-    //    - hourglass 안에 들어가는 것만 내려옴
-    //    - 안 들어가는 건 funneling으로 빠짐
-    // 3) 내려온 행이 새 바닥행 → 다시 1)
+    // 항상 가장 아래 resting 행에서 바깥쪽부터 좌/우 교대로 1개씩 빠짐
+    // 행이 비면 그 윗 행이 자동으로 새 바닥행
+    // → 자연스럽게 V자가 아래→위로 진행
 
     let nextSide: "left" | "right" = "left";
-    let currentDrainRow = -1; // 초기화 시 설정
-
-    function initDrain() {
-      // 가장 아래(gridRow가 큰) resting 행을 찾음
-      const resting = clumps.filter(c => c.state === "resting");
-      if (resting.length === 0) return;
-      currentDrainRow = resting.reduce((max, c) => Math.max(max, c.gridRow), 0);
-      nextSide = "left";
-    }
-
-    function getRowClumps(row: number): SandClump[] {
-      return clumps.filter(c => c.state === "resting" && c.gridRow === row);
-    }
-
-    // 바닥행이 빠지는 중인지 / 윗줄이 내려오는 중인지
-    let phase: "draining" | "settling" = "draining";
-    let settleSourceRow = -1; // settle 중: 어느 행에서 내려오는지
 
     function drainTick() {
-      if (currentDrainRow < 0) initDrain();
+      const resting = clumps.filter(c => c.state === "resting");
+      if (resting.length === 0) return;
 
-      if (phase === "draining") {
-        // ── 바닥행에서 좌/우 교대로 1개씩 빠짐 ──
-        const rowClumps = getRowClumps(currentDrainRow);
+      // 가장 아래 행 찾기
+      const bottomRow = resting.reduce((max, c) => Math.max(max, c.gridRow), 0);
+      const rowClumps = resting.filter(c => c.gridRow === bottomRow);
 
-        if (rowClumps.length === 0) {
-          // 바닥행 완전히 비었으면 → settle 단계로
-          phase = "settling";
-          settleSourceRow = currentDrainRow - 1;
-          nextSide = "left";
-          // 바로 settle 시작 (이번 tick에서)
-          drainTick();
-          return;
-        }
-
-        pickAndDrain(rowClumps);
-
-      } else {
-        // ── settle: 윗줄에서 1개씩 교대로 내려옴 ──
-        const sourceClumps = getRowClumps(settleSourceRow);
-
-        if (sourceClumps.length === 0) {
-          // 윗줄도 비었으면 → 그 위를 찾아서 다시 draining
-          const resting = clumps.filter(c => c.state === "resting");
-          if (resting.length === 0) return;
-          currentDrainRow = resting.reduce((max, c) => Math.max(max, c.gridRow), 0);
-          phase = "draining";
-          nextSide = "left";
-          return;
-        }
-
-        // 1개씩 교대로 내려보냄
-        const targetY = sourceClumps[0].y + CLUMP_STEP;
-        const maxXAtTarget = hgMaxXAtY(targetY) * 0.85;
-
-        // 좌/우 교대 선택
-        const leftClumps = sourceClumps
-          .filter(c => c.x < cx)
-          .sort((a, b) => b.x - a.x);
-        const rightClumps = sourceClumps
-          .filter(c => c.x >= cx)
-          .sort((a, b) => a.x - b.x);
-
-        let picked: SandClump | null = null;
-
-        if (nextSide === "left" && leftClumps.length > 0) {
-          picked = leftClumps[0];
-          nextSide = "right";
-        } else if (nextSide === "right" && rightClumps.length > 0) {
-          picked = rightClumps[0];
-          nextSide = "left";
-        } else if (leftClumps.length > 0) {
-          picked = leftClumps[0];
-          nextSide = "right";
-        } else if (rightClumps.length > 0) {
-          picked = rightClumps[0];
-          nextSide = "left";
-        }
-
-        if (picked) {
-          gridMap.delete(gridKey(picked.gridRow, picked.gridCol));
-
-          // hourglass 안에 들어가는지
-          if (maxXAtTarget > CLUMP_SIZE && Math.abs(picked.x - cx) <= maxXAtTarget) {
-            // 한 칸 아래로 sliding
-            picked.state = "sliding";
-            assignLandingSlot(picked);
-          } else {
-            // 밖이면 funneling으로 빠짐
-            picked.state = "funneling";
-            assignLandingSlot(picked);
-          }
-        }
-
-        // 윗줄 다 내려왔으면 → 새 바닥행에서 draining 재개
-        if (getRowClumps(settleSourceRow).length === 0) {
-          currentDrainRow = settleSourceRow;
-          phase = "draining";
-          nextSide = "left";
-        }
-      }
-    }
-
-    // 행에서 좌/우 교대로 1개 선택 → sliding
-    function pickAndDrain(rowClumps: SandClump[]) {
+      // 행 내에서 바깥쪽부터 (경사면 끝부터)
+      // 왼쪽: 가장 왼쪽(외곽) 먼저  |  오른쪽: 가장 오른쪽(외곽) 먼저
       const leftClumps = rowClumps
         .filter(c => c.x < cx)
-        .sort((a, b) => b.x - a.x);
+        .sort((a, b) => a.x - b.x); // 가장 왼쪽(외곽) 먼저
+
       const rightClumps = rowClumps
         .filter(c => c.x >= cx)
-        .sort((a, b) => a.x - b.x);
+        .sort((a, b) => b.x - a.x); // 가장 오른쪽(외곽) 먼저
 
       let picked: SandClump | null = null;
 
@@ -413,9 +318,7 @@ export default function ClaudeParticles() {
       if (picked) {
         picked.state = "sliding";
         assignLandingSlot(picked);
-        const key = gridKey(picked.gridRow, picked.gridCol);
-        gridMap.delete(key);
-        drainedPositions.add(key);
+        gridMap.delete(gridKey(picked.gridRow, picked.gridCol));
       }
     }
 
@@ -699,7 +602,7 @@ export default function ClaudeParticles() {
           }
           landingSlots.forEach(s => s.taken = false);
           drainedPositions.clear();
-          currentDrainRow = -1;
+          nextSide = "left";
           drainCounter = 0;
           cycleState = "fadein";
           cycleTimer = 0;
