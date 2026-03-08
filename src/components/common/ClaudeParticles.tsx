@@ -299,24 +299,12 @@ export default function ClaudeParticles() {
       // 현재 x 순서대로 정렬
       rowClumps.sort((a, b) => a.x - b.x);
 
-      // 이 Y에서 허용되는 최대 폭
-      const maxXAtY = hgMaxXAtY(rowClumps[0].y) * 0.85;
-
       // cx 중심으로 빈틈 없이 재배치
       const totalWidth = (rowClumps.length - 1) * CLUMP_STEP;
       const startX = cx - totalWidth / 2;
 
       for (let i = 0; i < rowClumps.length; i++) {
         const newX = startX + i * CLUMP_STEP;
-
-        // bounds 체크: 새 위치가 hourglass 밖이면 빠른 fadeout
-        if (maxXAtY <= 0 || Math.abs(newX - cx) > maxXAtY) {
-          gridMap.delete(gridKey(rowClumps[i].gridRow, rowClumps[i].gridCol));
-          rowClumps[i].state = "fading";
-          rowClumps[i].fadeAlpha = 1;
-          continue;
-        }
-
         if (Math.abs(rowClumps[i].x - newX) > 2) {
           gridMap.delete(gridKey(rowClumps[i].gridRow, rowClumps[i].gridCol));
           rowClumps[i].state = "shifting";
@@ -346,20 +334,10 @@ export default function ClaudeParticles() {
 
         for (const c of resting) {
           gridMap.delete(gridKey(c.gridRow, c.gridCol));
-
-          const newY = c.y + CLUMP_STEP;
-          const maxXAtNewY = hgMaxXAtY(newY) * 0.85;
-
-          if (maxXAtNewY <= 0 || Math.abs(c.x - cx) > maxXAtNewY) {
-            // bounds 밖 → 빠른 fadeout
-            c.state = "fading";
-            c.fadeAlpha = 1;
-          } else {
-            c.state = "settling";
-            c.settleToY = newY;
-            c.settleToRow = c.gridRow + 1;
-            c.vy = 0;
-          }
+          c.state = "settling";
+          c.settleToY = c.y + CLUMP_STEP;
+          c.settleToRow = c.gridRow + 1;
+          c.vy = 0;
         }
 
         currentBottomRow++;
@@ -403,16 +381,8 @@ export default function ClaudeParticles() {
               c.vx = 0;
               c.gridRow = c.settleToRow;
               c.homeY = c.settleToY;
-
-              // 새 위치가 hourglass edge 밖이면 → 빠른 fadeout
-              const maxXAtNewY = hgMaxXAtY(c.y) * 0.85;
-              if (maxXAtNewY <= 0 || Math.abs(c.x - cx) > maxXAtNewY) {
-                c.state = "fading";
-                c.fadeAlpha = 1;
-              } else {
-                c.state = "resting";
-                gridMap.set(gridKey(c.gridRow, c.gridCol), c);
-              }
+              c.state = "resting";
+              gridMap.set(gridKey(c.gridRow, c.gridCol), c);
             }
             break;
           }
