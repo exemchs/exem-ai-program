@@ -27,14 +27,14 @@ export default function ClaudeParticles() {
     const DOT_RADIUS_MAX = 3.0;
     const MAX_RADIUS = DOT_SPACING * 0.45;
 
-    const GRAVITY = 0.12;
-    const MAX_SLIDE_SPEED = 2.5;
-    const MAX_FUNNEL_SPEED = 3.5;
-    const MAX_FALL_SPEED = 5.5;
-    const FUNNEL_PULL = 0.04;
+    const GRAVITY = 0.25;
+    const MAX_SLIDE_SPEED = 5.0;
+    const MAX_FUNNEL_SPEED = 6.0;
+    const MAX_FALL_SPEED = 9.0;
+    const FUNNEL_PULL = 0.08;
     const NECK_THROUGHPUT = 1; // 한 번에 1 덩어리
-    const DRAIN_INTERVAL_MIN = 12;
-    const DRAIN_INTERVAL_MAX = 22;
+    const DRAIN_INTERVAL_MIN = 4;
+    const DRAIN_INTERVAL_MAX = 8;
     const PAUSE_DURATION = 1.5;
     const FADE_DURATION = 0.6;
 
@@ -370,9 +370,9 @@ export default function ClaudeParticles() {
             break;
 
           case "settling": {
-            // 한 칸 아래로 중력 낙하 → 도착하면 resting or fading
-            c.vy += GRAVITY * 0.6;
-            c.vy = Math.min(c.vy, 3.0);
+            // 한 칸 아래로 중력 낙하 → 도착하면 resting
+            c.vy += GRAVITY * 0.8;
+            c.vy = Math.min(c.vy, 5.0);
             c.y += c.vy;
 
             if (c.y >= c.settleToY) {
@@ -398,9 +398,9 @@ export default function ClaudeParticles() {
             // 경사면에서 중앙으로 수평 이동
             const dxToTarget = c.targetX - c.x;
             const dir = Math.sign(dxToTarget);
-            c.vx += dir * 0.15;
-            c.vx *= 0.88;
-            c.vx = clamp(c.vx, -2.5, 2.5);
+            c.vx += dir * 0.35;
+            c.vx *= 0.85;
+            c.vx = clamp(c.vx, -5.0, 5.0);
             c.x += c.vx;
 
             // 도착 판정
