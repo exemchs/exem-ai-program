@@ -108,6 +108,8 @@ export default function ClaudeParticles() {
       baseR: number;
       phase: number;
       speed: number;
+      posAlpha: number; // 위치 기반 opacity (상하단 진하고 중앙 옅음)
+      alwaysBright: boolean; // true면 항상 최대 opacity
     }
 
     interface AmbientDot {
@@ -223,29 +225,49 @@ export default function ClaudeParticles() {
 
     function buildEdgeDots() {
       edgeDots = [];
-      // 간격: 알갱이가 겹치지 않되 빽빽하게
-      const dotSpacing = 5.5;
+      // 간격: 알갱이 최대 반지름 ~5px → 직경 10px, 겹치지 않게
+      const dotSpacing = 11;
       const totalH = hgH * 2;
       const steps = Math.floor(totalH / dotSpacing);
-      // 3줄: 바깥으로 간격 7px씩 (겹치지 않게)
-      const offsets = [0, 7, 14];
+      // 3줄: 바깥으로 간격 11px씩 (겹치지 않게)
+      const offsets = [0, 11, 22];
 
       for (let i = 0; i <= steps; i++) {
         const ny = -1 + (2 * i) / steps;
         const pw = hgProfile(ny) * hgW;
         const py = cy + ny * hgH;
 
-        for (let layer = 0; layer < offsets.length; layer++) {
+        // 위치 기반 opacity: 중앙(ny=0) 가장 진하고, 상하단(ny=±1)으로 갈수록 옅어짐
+        const posAlpha = 0.7 - Math.abs(ny) * 0.4; // 중앙 0.7 → 상하단 0.3
+
+        // 끝 10% 구간(|ny| > 0.9)에서만 밀도 감소 → 라인 끝이 자연스럽게 사라짐
+        const absNy = Math.abs(ny);
+        const keepChance = absNy > 0.9
+          ? 1.0 - (absNy - 0.9) / 0.1 * 0.8  // 0.9→1.0: 100%→20%
+          : 1.0;
+
+        // 가장자리로 갈수록 바깥 레이어 탈락 → 라인이 얇아짐
+        // |ny| < 0.5: 3줄 모두, 0.5~0.8: 2줄, 0.8~1.0: 1줄
+        const maxLayers = absNy > 0.8 ? 1 : absNy > 0.5 ? 2 : 3;
+
+        for (let layer = 0; layer < Math.min(offsets.length, maxLayers); layer++) {
+          if (Math.random() > keepChance) continue; // 가장자리 탈락
           const off = offsets[layer];
           const layerScale = 1 - layer * 0.15;
-          // 크기: 2.0~3.5px (기존 1.0~1.8의 약 2배)
-          const br = (2.0 + Math.random() * 1.5) * layerScale;
+          const br = (2.5 + Math.random() * 2.5) * layerScale;
           const ph = Math.random() * PI2;
-          const sp = 0.5 + Math.random() * 1.0; // 더 빠른 breathing
-          // 바깥줄은 듬성듬성
+          const sp = 0.5 + Math.random() * 1.0;
           if (layer > 0 && Math.random() > 0.65) continue;
-          edgeDots.push({ x: cx + pw + off, y: py, baseR: br, phase: ph, speed: sp });
-          edgeDots.push({ x: cx - pw - off, y: py, baseR: br, phase: ph + 1, speed: sp });
+
+          // 러프한 위치 흔들림 (반지름 미만으로 제한 — 겹침 방지)
+          const jitterX = (Math.random() - 0.5) * 4;
+          const jitterY = (Math.random() - 0.5) * 3;
+
+          // 약 25%는 항상 밝은 알갱이 (라인 가시성 확보)
+          const bright = Math.random() < 0.25;
+
+          edgeDots.push({ x: cx + pw + off + jitterX, y: py + jitterY, baseR: br, phase: ph, speed: sp, posAlpha, alwaysBright: bright });
+          edgeDots.push({ x: cx - pw - off - jitterX, y: py + jitterY, baseR: br, phase: ph + 1, speed: sp, posAlpha, alwaysBright: bright });
         }
       }
     }
@@ -648,16 +670,29 @@ export default function ClaudeParticles() {
       }
     }
 
+    // 밝은 알갱이용 하이라이트 색상 (DC보다 더 밝은 톤)
+    const EC = "240, 225, 180";
+
     function drawEdge(t: number) {
       for (const ed of edgeDots) {
         const breath = Math.sin(t * ed.speed + ed.phase) * 0.5 + 0.5;
-        const r = ed.baseR * (0.4 + breath * 0.6);
-        const a = (0.2 + breath * 0.4) * globalAlpha; // 최소 20%
-        if (a < 0.01) continue;
-        ctx.beginPath();
-        ctx.arc(ed.x, ed.y, r, 0, PI2);
-        ctx.fillStyle = `rgba(${DC}, ${a})`;
-        ctx.fill();
+        const r = ed.baseR * (0.15 + breath * 0.85);
+        if (ed.alwaysBright) {
+          // 밝은 알갱이: 더 밝은 색 + 높은 opacity
+          const a = ed.posAlpha * (0.9 + breath * 0.1) * globalAlpha;
+          if (a < 0.01) continue;
+          ctx.beginPath();
+          ctx.arc(ed.x, ed.y, r, 0, PI2);
+          ctx.fillStyle = `rgba(${EC}, ${a})`;
+          ctx.fill();
+        } else {
+          const a = ed.posAlpha * (0.5 + breath * 0.5) * globalAlpha;
+          if (a < 0.01) continue;
+          ctx.beginPath();
+          ctx.arc(ed.x, ed.y, r, 0, PI2);
+          ctx.fillStyle = `rgba(${DC}, ${a})`;
+          ctx.fill();
+        }
       }
     }
 
@@ -769,8 +804,11 @@ export default function ClaudeParticles() {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       cx = w / 2;
       cy = h * 0.46;
-      hgW = Math.min(w * 0.36, 460);
-      hgH = h * 0.44;
+      // 비율 고정: 화면 크기에 관계없이 일정한 비율 유지
+      // 기준 해상도(1440×900)에서의 비율을 모든 화면에 적용
+      const refScale = Math.min(w / 1440, h / 900);
+      hgW = 380 * refScale;
+      hgH = 380 * refScale;
 
       buildClumps();
       buildEdgeDots();
