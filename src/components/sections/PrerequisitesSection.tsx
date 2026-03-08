@@ -42,7 +42,7 @@ function PopupOverlay({
           <X size={20} />
         </button>
         <p className="text-lg font-normal text-[#1a2234] mb-1">
-          설치가 어려운 비전공자는
+          설치가 어려우신 분들은
         </p>
         <p className="text-lg font-normal text-[#1a2234] mb-5">
           {isVideo ? "영상을 확인하세요" : "스크린샷을 확인하세요"}
