@@ -380,11 +380,31 @@ export default function ClaudeParticles() {
               c.gridRow = c.settleToRow;
               c.homeY = c.settleToY;
 
-              // bounds 밖이면 실제 제거 → 보이는 수 = drain 수
+              // bounds 밖이면 제거 + 하단에 landed 생성 (모래 보존)
               const maxXAtNewY = hgMaxXAtY(c.y) * 0.85;
               if (maxXAtNewY <= 0 || Math.abs(c.x - cx) > maxXAtNewY) {
                 c.state = "fading";
                 c.fadeAlpha = 1;
+                // 하단에 대응하는 landed clump 생성
+                const slot = landingSlots.find(s => !s.taken);
+                if (slot) {
+                  slot.taken = true;
+                  const landed: SandClump = {
+                    id: nextId++,
+                    x: slot.x, y: slot.y,
+                    homeX: slot.x, homeY: slot.y,
+                    targetX: slot.x, targetY: slot.y,
+                    vx: 0, vy: 0,
+                    state: "landed",
+                    landedAt: now,
+                    trail: [],
+                    dots: makeSubDots(),
+                    gridRow: -1, gridCol: -1,
+                    settleToY: 0, settleToRow: 0,
+                    fadeAlpha: 1,
+                  };
+                  clumps.push(landed);
+                }
               } else {
                 c.state = "resting";
                 gridMap.set(gridKey(c.gridRow, c.gridCol), c);
