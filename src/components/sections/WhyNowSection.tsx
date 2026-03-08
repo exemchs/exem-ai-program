@@ -22,7 +22,7 @@ export default function WhyNowSection() {
   ];
 
   return (
-    <section id="why-now" className="py-28 relative border-t border-white/5">
+    <section id="why-now" className="py-28 relative border-t border-[#fff3d7]/[0.04]">
       <div className="max-w-5xl mx-auto px-6">
         <SectionHeading subtitle="Why Now">
           최적의 타이밍,
@@ -38,15 +38,15 @@ export default function WhyNowSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="p-8 rounded-3xl bg-zinc-900/50 border border-white/[0.04] hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(249,115,22,0.08)] hover:border-orange-500/30 transition-all duration-300 group"
+              className="p-8 rounded-3xl bg-[#fff3d7]/[0.04] border border-[#fff3d7]/[0.04] hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(208,241,0,0.08)] hover:border-[#d0f100]/30 transition-all duration-300 group"
             >
-              <div className="w-12 h-12 rounded-2xl bg-zinc-800 flex items-center justify-center text-orange-400 mb-6 group-hover:scale-110 transition-transform">
+              <div className="w-12 h-12 rounded-2xl bg-[#fff3d7]/[0.08] flex items-center justify-center text-[#d0f100] mb-6 group-hover:scale-110 transition-transform">
                 {item.icon}
               </div>
-              <h3 className="text-lg font-medium text-white mb-4">
+              <h3 className="text-lg font-medium text-[#fff3d7] mb-4">
                 {item.title}
               </h3>
-              <p className="text-zinc-400 leading-relaxed">{item.desc}</p>
+              <p className="text-[#fff3d7]/55 leading-relaxed">{item.desc}</p>
             </motion.div>
           ))}
         </div>

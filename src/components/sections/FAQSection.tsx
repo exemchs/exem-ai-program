@@ -26,7 +26,7 @@ export default function FAQSection({
   onNavigateReference: () => void;
 }) {
   return (
-    <section className="py-40 bg-zinc-900/30 border-y border-white/5">
+    <section className="py-40 bg-[#fff3d7]/[0.03] border-y border-[#fff3d7]/[0.04]">
       <div className="max-w-3xl mx-auto px-6">
         <SectionHeading subtitle="FAQ" align="center">
           자주 묻는 질문
@@ -36,15 +36,15 @@ export default function FAQSection({
           {faqs.map((faq, i) => (
             <details
               key={i}
-              className="group p-6 rounded-2xl bg-black border border-white/5 open:border-orange-500/30 transition-colors cursor-pointer"
+              className="group p-6 rounded-2xl bg-[#100d0a] border border-[#fff3d7]/[0.04] open:border-[#d0f100]/30 transition-colors cursor-pointer"
             >
-              <summary className="text-lg font-medium text-white flex justify-between items-center list-none outline-none">
+              <summary className="text-lg font-medium text-[#fff3d7] flex justify-between items-center list-none outline-none">
                 {faq.q}
-                <span className="text-orange-400 group-open:rotate-45 transition-transform duration-300 text-2xl leading-none">
+                <span className="text-[#d0f100] group-open:rotate-45 transition-transform duration-300 text-2xl leading-none">
                   +
                 </span>
               </summary>
-              <p className="mt-4 text-zinc-400 leading-relaxed">{faq.a}</p>
+              <p className="mt-4 text-[#fff3d7]/55 leading-relaxed">{faq.a}</p>
             </details>
           ))}
         </div>
@@ -52,7 +52,7 @@ export default function FAQSection({
         <div className="mt-12 text-center">
           <button
             onClick={onNavigateReference}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-zinc-900 border border-white/10 text-zinc-300 hover:text-white hover:border-white/30 transition-all cursor-pointer"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#fff3d7]/[0.06] border border-[#fff3d7]/[0.08] text-[#fff3d7]/70 hover:text-[#fff3d7] hover:border-[#fff3d7]/15 transition-all cursor-pointer"
           >
             추천 레퍼런스 보기 <ArrowRight size={16} />
           </button>

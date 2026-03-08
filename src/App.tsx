@@ -25,7 +25,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-zinc-300 font-sans selection:bg-orange-500/30">
+    <div className="min-h-screen bg-[#100d0a] text-[#fff3d7] font-sans selection:bg-[#d0f100]/30">
       <HeroSection />
       <WhyNowSection />
       <WhatWeLearnSection />

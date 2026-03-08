@@ -119,21 +119,21 @@ export default function PrerequisitesSection({
           <SectionHeading subtitle="Prerequisites" align="center">
             간단한 사전 세팅
             <br />
-            <span className="text-zinc-500 text-3xl md:text-4xl mt-2 block font-normal">
+            <span className="text-[#fff3d7]/40 text-3xl md:text-4xl mt-2 block font-normal">
               딱 4가지만 준비하면 됩니다
             </span>
           </SectionHeading>
 
-          <div className="flex items-center gap-2 p-1.5 rounded-full bg-zinc-900 border border-white/10 w-fit">
+          <div className="flex items-center gap-2 p-1.5 rounded-full bg-[#fff3d7]/[0.06] border border-[#fff3d7]/[0.08] w-fit">
             <button
               onClick={() => onOsChange("mac")}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium transition-all ${os === "mac" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"}`}
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium transition-all ${os === "mac" ? "bg-[#fff3d7] text-[#100d0a] shadow-sm" : "text-[#fff3d7]/55 hover:text-[#fff3d7]"}`}
             >
               <Apple size={16} /> macOS
             </button>
             <button
               onClick={() => onOsChange("win")}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium transition-all ${os === "win" ? "bg-white text-black shadow-sm" : "text-zinc-400 hover:text-white"}`}
+              className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium transition-all ${os === "win" ? "bg-[#fff3d7] text-[#100d0a] shadow-sm" : "text-[#fff3d7]/55 hover:text-[#fff3d7]"}`}
             >
               <Monitor size={16} /> Windows
             </button>
@@ -144,22 +144,22 @@ export default function PrerequisitesSection({
           {cards.map((item, i) => (
             <div
               key={i}
-              className="p-6 rounded-2xl bg-zinc-900/50 border border-white/5 flex flex-col h-full hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(249,115,22,0.15)] hover:border-orange-500/30 transition-all duration-300 group"
+              className="p-6 rounded-2xl bg-[#fff3d7]/[0.04] border border-[#fff3d7]/[0.04] flex flex-col h-full hover:-translate-y-2 hover:shadow-[0_0_30px_rgba(208,241,0,0.15)] hover:border-[#d0f100]/30 transition-all duration-300 group"
             >
               <div className="flex items-center gap-3 mb-4">
-                <span className="text-2xl font-medium text-orange-400">
+                <span className="text-2xl font-medium text-[#d0f100]">
                   {item.step}
                 </span>
-                <h3 className="text-xl font-medium text-white flex items-center gap-2">
+                <h3 className="text-xl font-medium text-[#fff3d7] flex items-center gap-2">
                   {item.title}
                 </h3>
               </div>
-              <p className="text-zinc-400 mb-6 grow">{item.desc}</p>
+              <p className="text-[#fff3d7]/55 mb-6 grow">{item.desc}</p>
               <a
                 href={item.link}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 text-sm text-orange-400 hover:text-orange-300 transition-colors"
+                className="inline-flex items-center gap-2 text-sm text-[#d0f100] hover:text-[#e8ff6b] transition-colors"
               >
                 {item.linkText} <ArrowRight size={14} />
               </a>
@@ -168,7 +168,7 @@ export default function PrerequisitesSection({
         </div>
 
         <div className="max-w-3xl mx-auto">
-          <h3 className="text-2xl font-medium text-white mb-12 text-center">
+          <h3 className="text-2xl font-medium text-[#fff3d7] mb-12 text-center">
             5분이면 준비 끝
           </h3>
 
@@ -180,22 +180,22 @@ export default function PrerequisitesSection({
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-100px" }}
                 transition={{ delay: i * 0.1 }}
-                className="p-6 md:p-8 rounded-3xl bg-zinc-900/50 border border-white/5 flex flex-col md:flex-row gap-6 items-start group hover:border-orange-500/30 transition-colors"
+                className="p-6 md:p-8 rounded-3xl bg-[#fff3d7]/[0.04] border border-[#fff3d7]/[0.04] flex flex-col md:flex-row gap-6 items-start group hover:border-[#d0f100]/30 transition-colors"
               >
-                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-orange-500/10 text-orange-400 font-medium shrink-0">
+                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-[#d0f100]/10 text-[#d0f100] font-medium shrink-0">
                   {i + 1}
                 </div>
                 <div className="flex-grow w-full overflow-hidden">
-                  <h4 className="text-xl font-medium text-white mb-2">
+                  <h4 className="text-xl font-medium text-[#fff3d7] mb-2">
                     {step.title}
                   </h4>
-                  <p className="text-zinc-400 mb-4">
+                  <p className="text-[#fff3d7]/55 mb-4">
                     {step.desc}
                     {/* @ts-ignore */}
                     {step.shortcut && (
                       <>
                         {" ("}
-                        <code className="text-orange-300 bg-orange-500/10 px-1.5 py-0.5 rounded">
+                        <code className="text-[#d0f100] bg-[#d0f100]/10 px-1.5 py-0.5 rounded">
                           {/* @ts-ignore */}
                           {step.shortcut}
                         </code>
@@ -205,7 +205,7 @@ export default function PrerequisitesSection({
                   </p>
 
                   {step.image && (
-                    <div className="mb-4 rounded-xl overflow-hidden border border-white/10 bg-zinc-800/50 relative">
+                    <div className="mb-4 rounded-xl overflow-hidden border border-[#fff3d7]/[0.08] bg-[#fff3d7]/[0.08] relative">
                       <img
                         src={step.image}
                         alt={step.title}
@@ -230,12 +230,12 @@ export default function PrerequisitesSection({
                   )}
 
                   {step.code && (
-                    <div className="mb-4 rounded-xl bg-black border border-white/10 overflow-hidden">
-                      <div className="flex items-center px-4 py-2 bg-zinc-900 border-b border-white/10 text-xs text-zinc-500 font-mono">
+                    <div className="mb-4 rounded-xl bg-[#100d0a] border border-[#fff3d7]/[0.08] overflow-hidden">
+                      <div className="flex items-center px-4 py-2 bg-[#fff3d7]/[0.06] border-b border-[#fff3d7]/[0.08] text-xs text-[#fff3d7]/40 font-mono">
                         Terminal
                       </div>
-                      <div className="p-4 font-mono text-sm text-zinc-300 flex items-center gap-3 overflow-x-auto">
-                        <span className="text-orange-400 shrink-0">❯</span>
+                      <div className="p-4 font-mono text-sm text-[#fff3d7]/70 flex items-center gap-3 overflow-x-auto">
+                        <span className="text-[#d0f100] shrink-0">❯</span>
                         <code className="whitespace-nowrap">{step.code}</code>
                       </div>
                     </div>
@@ -253,7 +253,7 @@ export default function PrerequisitesSection({
           </div>
 
           <div className="mt-12 text-center">
-            <p className="text-xl font-medium text-white">
+            <p className="text-xl font-medium text-[#fff3d7]">
               설치 과정이 막막하거나, 어렵게 느껴진다면 Claude에게 물어보세요.
               <br />
               AI는 AI가 제일 잘 아니까요.

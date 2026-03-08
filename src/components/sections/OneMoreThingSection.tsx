@@ -12,31 +12,31 @@ export default function OneMoreThingSection() {
         </SectionHeading>
 
         <div className="grid md:grid-cols-2 gap-8">
-          <div className="p-8 rounded-3xl bg-zinc-900 border border-white/[0.04]">
-            <div className="w-12 h-12 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-400 mb-6">
+          <div className="p-8 rounded-3xl bg-[#fff3d7]/[0.06] border border-[#fff3d7]/[0.04]">
+            <div className="w-12 h-12 rounded-full bg-[#d0f100]/10 flex items-center justify-center text-[#d0f100] mb-6">
               <Layers size={24} />
             </div>
-            <h3 className="text-xl font-medium text-white mb-4">
+            <h3 className="text-xl font-medium text-[#fff3d7] mb-4">
               에이전트 팀 만들기
             </h3>
-            <p className="text-zinc-400 mb-6">
+            <p className="text-[#fff3d7]/55 mb-6">
               여러 Claude Code를 동시에 띄워, 각각 다른 역할을 맡깁니다.
             </p>
-            <div className="p-4 rounded-xl bg-black border border-white/[0.04] font-mono text-sm text-zinc-300">
-              <span className="text-zinc-500"># 팁: 각각 다른 규칙 설정</span>
+            <div className="p-4 rounded-xl bg-[#100d0a] border border-[#fff3d7]/[0.04] font-mono text-sm text-[#fff3d7]/70">
+              <span className="text-[#fff3d7]/40"># 팁: 각각 다른 규칙 설정</span>
               <br />
               CLAUDE.md
             </div>
           </div>
 
-          <div className="p-8 rounded-3xl bg-zinc-900 border border-white/[0.04]">
+          <div className="p-8 rounded-3xl bg-[#fff3d7]/[0.06] border border-[#fff3d7]/[0.04]">
             <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400 mb-6">
               <Zap size={24} />
             </div>
-            <h3 className="text-xl font-medium text-white mb-4">
+            <h3 className="text-xl font-medium text-[#fff3d7] mb-4">
               나만의 자동화 파이프라인
             </h3>
-            <p className="text-zinc-400 mb-6">
+            <p className="text-[#fff3d7]/55 mb-6">
               Skill, MCP, CLAUDE.md를 조합해 반복 업무를 자동화합니다.
             </p>
             <a

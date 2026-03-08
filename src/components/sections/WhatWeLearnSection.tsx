@@ -40,7 +40,7 @@ export default function WhatWeLearnSection() {
   const [activeTab, setActiveTab] = useState(0);
 
   return (
-    <section className="py-28 bg-zinc-900/30 border-y border-white/5">
+    <section className="py-28 bg-[#fff3d7]/[0.03] border-y border-[#fff3d7]/[0.04]">
       <div className="max-w-5xl mx-auto px-6">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div>
@@ -49,10 +49,10 @@ export default function WhatWeLearnSection() {
               코딩이 아닙니다
             </SectionHeading>
             <div className="space-y-6 mb-12">
-              <p className="text-base text-zinc-400 leading-relaxed">
+              <p className="text-base text-[#fff3d7]/55 leading-relaxed">
                 코드가 아니라, 일하는 방식을 바꾸는 겁니다.
               </p>
-              <p className="text-base text-zinc-400 leading-relaxed">
+              <p className="text-base text-[#fff3d7]/55 leading-relaxed">
                 하고 싶은 일을 말로 전하면 됩니다.
               </p>
             </div>
@@ -62,7 +62,7 @@ export default function WhatWeLearnSection() {
                 <button
                   key={idx}
                   onClick={() => setActiveTab(idx)}
-                  className={`flex items-center gap-3 px-6 py-4 rounded-2xl border transition-all text-left ${activeTab === idx ? "bg-orange-500/10 border-orange-500/30 text-orange-400" : "bg-zinc-900/50 border-white/5 text-zinc-400 hover:bg-zinc-900 hover:text-zinc-300"}`}
+                  className={`flex items-center gap-3 px-6 py-4 rounded-2xl border transition-all text-left ${activeTab === idx ? "bg-[#d0f100]/10 border-[#d0f100]/30 text-[#d0f100]" : "bg-[#fff3d7]/[0.04] border-[#fff3d7]/[0.04] text-[#fff3d7]/55 hover:bg-[#fff3d7]/[0.06] hover:text-[#fff3d7]/70"}`}
                 >
                   {tab.icon}
                   <span className="font-medium">{tab.title}</span>
@@ -72,28 +72,28 @@ export default function WhatWeLearnSection() {
           </div>
 
           <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-tr from-orange-500/20 to-transparent blur-3xl rounded-full"></div>
-            <div className="relative rounded-2xl border border-white/10 bg-black overflow-hidden shadow-2xl h-[400px] flex flex-col terminal-window">
-              <div className="h-10 border-b border-white/10 bg-zinc-900 flex items-center px-4 gap-2 shrink-0">
+            <div className="absolute inset-0 bg-gradient-to-tr from-[#d0f100]/20 to-transparent blur-3xl rounded-full"></div>
+            <div className="relative rounded-2xl border border-[#fff3d7]/[0.08] bg-[#100d0a] overflow-hidden shadow-2xl h-[400px] flex flex-col terminal-window">
+              <div className="h-10 border-b border-[#fff3d7]/[0.08] bg-[#fff3d7]/[0.06] flex items-center px-4 gap-2 shrink-0">
                 <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
                 <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
                 <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
-                <div className="ml-4 text-xs font-mono text-zinc-500">
+                <div className="ml-4 text-xs font-mono text-[#fff3d7]/40">
                   claude-code
                 </div>
               </div>
               <div className="p-6 font-mono text-sm overflow-y-auto flex-grow">
                 <div className="flex gap-4 mb-4">
-                  <span className="text-orange-400">❯</span>
-                  <span className="text-white">claude</span>
+                  <span className="text-[#d0f100]">❯</span>
+                  <span className="text-[#fff3d7]">claude</span>
                 </div>
-                <div className="text-zinc-400 mb-6">
+                <div className="text-[#fff3d7]/55 mb-6">
                   Welcome to Claude Code! I can help you write code, analyze
                   data, and automate tasks.
                 </div>
                 <div className="flex gap-4 mb-6">
                   <span className="text-blue-400 shrink-0">You:</span>
-                  <span className="text-zinc-300">
+                  <span className="text-[#fff3d7]/70">
                     <Typewriter
                       key={`user-${activeTab}`}
                       text={terminalContent[activeTab].user}
@@ -103,8 +103,8 @@ export default function WhatWeLearnSection() {
                   </span>
                 </div>
                 <div className="flex gap-4">
-                  <span className="text-orange-400 shrink-0">Claude:</span>
-                  <div className="text-zinc-300 space-y-2">
+                  <span className="text-[#d0f100] shrink-0">Claude:</span>
+                  <div className="text-[#fff3d7]/70 space-y-2">
                     <p>
                       <Typewriter
                         key={`claude-1-${activeTab}`}
@@ -113,7 +113,7 @@ export default function WhatWeLearnSection() {
                         startDelay={1500}
                       />
                     </p>
-                    <p className="text-zinc-500 italic">
+                    <p className="text-[#fff3d7]/40 italic">
                       <Typewriter
                         key={`claude-2-${activeTab}`}
                         text={terminalContent[activeTab].claude[1]}
