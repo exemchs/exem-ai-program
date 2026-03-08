@@ -489,14 +489,14 @@ export default function App() {
                       : "Cursor 안에서 터미널을 엽니다. (Ctrl+J)",
                   code: null,
                   tip: "✓ 화면 하단에 검은 배경의 터미널 창이 뜨면 성공입니다.",
-                  image: "/images/step2.png",
+                  image: "/imgs/installation/step2.png",
                 },
                 {
                   title: "Git 설치 확인",
                   desc: "터미널에 아래 명령어를 입력해 Git이 설치되어 있는지 확인하세요.",
                   code: "git --version",
                   tip: "✓ git version 2.x.x 형식의 버전 번호가 뜨면 성공입니다.",
-                  image: "/images/step3.png",
+                  image: "/imgs/installation/step3.png",
                   imageOverlay: [
                     { top: "61.5%", left: "0%", width: "27%", height: "4%" },
                     { top: "66.5%", left: "0%", width: "27%", height: "4%" },
@@ -507,7 +507,7 @@ export default function App() {
                   desc: "터미널에 아래 명령어를 입력해 Node.js가 설치되어 있는지 확인하세요.",
                   code: "node --version",
                   tip: "✓ v18.x.x 이상의 버전 번호가 뜨면 성공입니다.",
-                  image: "/images/step4.png",
+                  image: "/imgs/installation/step4.png",
                   imageOverlay: [
                     { top: "61.5%", left: "0%", width: "27%", height: "4%" },
                     { top: "66.5%", left: "0%", width: "27%", height: "4%" },
