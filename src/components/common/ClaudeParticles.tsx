@@ -379,8 +379,16 @@ export default function ClaudeParticles() {
               c.vx = 0;
               c.gridRow = c.settleToRow;
               c.homeY = c.settleToY;
-              c.state = "resting";
-              gridMap.set(gridKey(c.gridRow, c.gridCol), c);
+
+              // bounds 밖이면 실제 제거 → 보이는 수 = drain 수
+              const maxXAtNewY = hgMaxXAtY(c.y) * 0.85;
+              if (maxXAtNewY <= 0 || Math.abs(c.x - cx) > maxXAtNewY) {
+                c.state = "fading";
+                c.fadeAlpha = 1;
+              } else {
+                c.state = "resting";
+                gridMap.set(gridKey(c.gridRow, c.gridCol), c);
+              }
             }
             break;
           }
@@ -664,23 +672,8 @@ export default function ClaudeParticles() {
         cycleTimer += dt;
         globalAlpha = Math.max(0, 1 - cycleTimer / FADE_DURATION);
         if (globalAlpha <= 0) {
-          // 리셋
-          clumps.forEach(c => {
-            c.x = c.homeX;
-            c.y = c.homeY;
-            c.state = "resting";
-            c.vx = 0;
-            c.vy = 0;
-            c.trail = [];
-            c.landedAt = 0;
-            c.fadeAlpha = 1;
-          });
-          // gridMap 재구축
-          gridMap.clear();
-          for (const c of clumps) {
-            gridMap.set(gridKey(c.gridRow, c.gridCol), c);
-          }
-          landingSlots.forEach(s => s.taken = false);
+          // 리셋 — 처음부터 완전 재생성
+          buildClumps();
           currentBottomRow = -1;
           drainCounter = 0;
           cycleState = "fadein";
