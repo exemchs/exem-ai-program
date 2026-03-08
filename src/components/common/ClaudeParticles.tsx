@@ -33,8 +33,8 @@ export default function ClaudeParticles() {
     const MAX_FALL_SPEED = 5.5;
     const FUNNEL_PULL = 0.04;
     const NECK_THROUGHPUT = 1; // 한 번에 1 덩어리
-    const DRAIN_INTERVAL_MIN = 8;
-    const DRAIN_INTERVAL_MAX = 14;
+    const DRAIN_INTERVAL_MIN = 12;
+    const DRAIN_INTERVAL_MAX = 22;
     const PAUSE_DURATION = 1.5;
     const FADE_DURATION = 0.6;
 
@@ -277,56 +277,63 @@ export default function ClaudeParticles() {
       return !gridMap.has(belowKey);
     }
 
-    function drainTick() {
-      // STEP 1: 목 바로 위 resting 덩어리 → funneling
-      const neckClumps = clumps.filter(c =>
-        c.state === "resting" && isNearNeck(c.y)
-      );
-      neckClumps.sort((a, b) => b.y - a.y);
-      const toFunnel = neckClumps.slice(0, NECK_THROUGHPUT);
-      for (const c of toFunnel) {
-        c.state = "funneling";
-        assignLandingSlot(c);
-        gridMap.delete(gridKey(c.gridRow, c.gridCol));
-      }
+    // 좌/우 교대 플래그
+    let nextSide: "left" | "right" = "left";
 
-      // STEP 2: V자 경사면 표면 가장자리 덩어리 탐색
+    function drainTick() {
+      // ── 주 동작: V자 경사면 표면 끝 덩어리가 교대로 떨어짐 ──
       // 표면 = resting이면서 아래가 비어있는 덩어리
-      // 좌측에서 중앙에 가장 가까운 것, 우측에서 중앙에 가장 가까운 것
       const surfaceClumps = clumps.filter(c =>
         c.state === "resting" && hasEmptyBelow(c)
       );
 
-      let leftEdge: SandClump | null = null;
-      let rightEdge: SandClump | null = null;
-
       const leftSurface = surfaceClumps
-        .filter(c => c.x < cx - CLUMP_STEP * 0.5)
+        .filter(c => c.x < cx - CLUMP_STEP * 0.3)
         .sort((a, b) => {
+          // 아래 행 우선, 같은 행이면 중앙에 가까운 것
           if (Math.abs(a.y - b.y) > CLUMP_STEP * 0.5) return b.y - a.y;
           return b.x - a.x;
         });
       const rightSurface = surfaceClumps
-        .filter(c => c.x > cx + CLUMP_STEP * 0.5)
+        .filter(c => c.x > cx + CLUMP_STEP * 0.3)
         .sort((a, b) => {
           if (Math.abs(a.y - b.y) > CLUMP_STEP * 0.5) return b.y - a.y;
           return a.x - b.x;
         });
 
-      if (leftSurface.length > 0) leftEdge = leftSurface[0];
-      if (rightSurface.length > 0) rightEdge = rightSurface[0];
+      // 중앙 (목 바로 위) 덩어리 — 좌우가 없으면 직접 funneling
+      const centerSurface = surfaceClumps
+        .filter(c => Math.abs(c.x - cx) <= CLUMP_STEP * 0.3)
+        .sort((a, b) => b.y - a.y);
 
-      // STEP 3: sliding 전환 (가끔 비대칭)
-      const bothSides = Math.random() > 0.15;
-      if (leftEdge) {
-        leftEdge.state = "sliding";
-        assignLandingSlot(leftEdge);
-        gridMap.delete(gridKey(leftEdge.gridRow, leftEdge.gridCol));
+      let picked: SandClump | null = null;
+
+      // 좌/우 교대
+      if (nextSide === "left" && leftSurface.length > 0) {
+        picked = leftSurface[0];
+        nextSide = "right";
+      } else if (nextSide === "right" && rightSurface.length > 0) {
+        picked = rightSurface[0];
+        nextSide = "left";
+      } else if (leftSurface.length > 0) {
+        picked = leftSurface[0];
+        nextSide = "right";
+      } else if (rightSurface.length > 0) {
+        picked = rightSurface[0];
+        nextSide = "left";
+      } else if (centerSurface.length > 0) {
+        picked = centerSurface[0];
       }
-      if (rightEdge && bothSides) {
-        rightEdge.state = "sliding";
-        assignLandingSlot(rightEdge);
-        gridMap.delete(gridKey(rightEdge.gridRow, rightEdge.gridCol));
+
+      if (picked) {
+        // 목 바로 근처면 바로 funneling, 아니면 sliding
+        if (isNearNeck(picked.y)) {
+          picked.state = "funneling";
+        } else {
+          picked.state = "sliding";
+        }
+        assignLandingSlot(picked);
+        gridMap.delete(gridKey(picked.gridRow, picked.gridCol));
       }
     }
 
@@ -343,19 +350,26 @@ export default function ClaudeParticles() {
             break;
 
           case "sliding": {
-            c.vy += GRAVITY * 0.3;
+            // 경사면을 따라 아래+중앙 방향으로 미끄러짐
+            c.vy += GRAVITY * 0.5;
             c.vy = Math.min(c.vy, MAX_SLIDE_SPEED);
 
+            // 중앙 방향으로 약한 끌림 (경사면 기울기)
             const dxToCenter = cx - c.x;
-            c.vx += dxToCenter * FUNNEL_PULL * 0.5;
-            c.vx *= 0.92;
+            const pullStrength = 0.02 + Math.abs(dxToCenter) * 0.00005;
+            c.vx += dxToCenter * pullStrength;
+            c.vx *= 0.94;
 
             c.x += c.vx;
             c.y += c.vy;
 
+            // 벽면 충돌
             const maxX = hgMaxXAtY(c.y) * 0.85;
-            c.x = clamp(c.x, cx - maxX, cx + maxX);
+            if (maxX > 0) {
+              c.x = clamp(c.x, cx - maxX, cx + maxX);
+            }
 
+            // 목 근처 도달 → funneling
             const ny = (c.y - cy) / hgH;
             if (ny > -0.08) {
               c.state = "funneling";
