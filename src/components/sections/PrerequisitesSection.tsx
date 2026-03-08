@@ -2,9 +2,7 @@ import { motion } from "motion/react";
 import {
   Terminal,
   GitBranch,
-  Monitor,
   Key,
-  Apple,
   ArrowRight,
   CheckCircle2,
 } from "lucide-react";
@@ -23,7 +21,7 @@ export default function PrerequisitesSection({
     {
       step: "①",
       title: "Cursor",
-      icon: <Monitor size={20} />,
+      icon: <Terminal size={20} />,
       desc: "Claude Code를 실행할 에디터입니다.",
       link: "https://cursor.sh",
       linkText: "cursor.sh에서 다운로드",
@@ -129,13 +127,13 @@ export default function PrerequisitesSection({
               onClick={() => onOsChange("mac")}
               className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium transition-all ${os === "mac" ? "bg-[#fff3d7] text-[#100d0a] shadow-sm" : "text-[#fff3d7]/55 hover:text-[#fff3d7]"}`}
             >
-              <Apple size={16} /> macOS
+              <img src="/imgs/apple-logo.png" alt="Apple" className="w-4 h-4 object-contain brightness-0 invert" style={os === "mac" ? { filter: "brightness(0)" } : { filter: "brightness(0) invert(1)" }} /> macOS
             </button>
             <button
               onClick={() => onOsChange("win")}
               className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-medium transition-all ${os === "win" ? "bg-[#fff3d7] text-[#100d0a] shadow-sm" : "text-[#fff3d7]/55 hover:text-[#fff3d7]"}`}
             >
-              <Monitor size={16} /> Windows
+              <img src="/imgs/windows-logo.png" alt="Windows" className="w-4 h-4 object-contain" style={os === "win" ? { filter: "brightness(0)" } : {}} /> Windows
             </button>
           </div>
         </div>
