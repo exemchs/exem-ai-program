@@ -223,9 +223,13 @@ export default function ClaudeParticles() {
 
     function buildEdgeDots() {
       edgeDots = [];
-      const steps = 120;
-      // 3줄: 0 = 프로파일 위, +4px, +8px (바깥으로)
-      const offsets = [0, 4, 9];
+      // 알갱이 최대 반지름 ~3.5px → 간격 8px 이상이어야 겹치지 않음
+      const dotSpacing = 8;
+      const totalH = hgH * 2;
+      const steps = Math.floor(totalH / dotSpacing);
+      // 3줄: 바깥으로 간격 10px씩 (겹치지 않게)
+      const offsets = [0, 10, 20];
+
       for (let i = 0; i <= steps; i++) {
         const ny = -1 + (2 * i) / steps;
         const pw = hgProfile(ny) * hgW;
@@ -233,13 +237,13 @@ export default function ClaudeParticles() {
 
         for (let layer = 0; layer < offsets.length; layer++) {
           const off = offsets[layer];
-          // 바깥 줄일수록 약간 작고 옅어짐
-          const layerScale = 1 - layer * 0.2;
-          const br = (1.0 + Math.random() * 0.8) * layerScale;
+          const layerScale = 1 - layer * 0.15;
+          // 크기: 2.0~3.5px (기존 1.0~1.8의 약 2배)
+          const br = (2.0 + Math.random() * 1.5) * layerScale;
           const ph = Math.random() * PI2;
-          const sp = 0.3 + Math.random() * 0.6;
-          // 간헐적 빈칸 (바깥줄일수록 더 듬성듬성)
-          if (layer > 0 && Math.random() > 0.7) continue;
+          const sp = 0.5 + Math.random() * 1.0; // 더 빠른 breathing
+          // 바깥줄은 듬성듬성
+          if (layer > 0 && Math.random() > 0.65) continue;
           edgeDots.push({ x: cx + pw + off, y: py, baseR: br, phase: ph, speed: sp });
           edgeDots.push({ x: cx - pw - off, y: py, baseR: br, phase: ph + 1, speed: sp });
         }
@@ -647,8 +651,8 @@ export default function ClaudeParticles() {
     function drawEdge(t: number) {
       for (const ed of edgeDots) {
         const breath = Math.sin(t * ed.speed + ed.phase) * 0.5 + 0.5;
-        const r = ed.baseR * 1.5 * (0.3 + breath * 0.7);
-        const a = (0.25 + breath * 0.25) * globalAlpha;
+        const r = ed.baseR * (0.15 + breath * 0.85);
+        const a = (0.15 + breath * 0.45) * globalAlpha;
         if (a < 0.01) continue;
         ctx.beginPath();
         ctx.arc(ed.x, ed.y, r, 0, PI2);
