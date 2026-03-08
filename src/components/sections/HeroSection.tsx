@@ -1,7 +1,5 @@
 import { motion } from "motion/react";
 import { Sun, Moon, Sparkles } from "lucide-react";
-import UnicornEmbed from "../common/UnicornEmbed";
-
 export default function HeroSection({
   isDarkMode,
   onToggleTheme,
@@ -11,21 +9,6 @@ export default function HeroSection({
 }) {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {isDarkMode ? (
-        <UnicornEmbed />
-      ) : (
-        <div
-          className="absolute inset-0 z-[1] pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse 70% 50% at 50% 0%, rgba(251,146,60,0.35) 0%, rgba(251,191,36,0.15) 40%, transparent 70%)",
-          }}
-        />
-      )}
-
-      {/* Watermark Cover - Forced to cover the Unicorn Studio badge */}
-      <div className="absolute bottom-0 left-0 w-full h-24 bg-black z-[999] pointer-events-none"></div>
-
       <div className="absolute top-6 right-6 z-50">
         <motion.button
           onClick={onToggleTheme}

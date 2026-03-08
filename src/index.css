@@ -16,11 +16,6 @@ code {
   font-size: 0.85em;
 }
 
-/* Hide Unicorn Studio Logo */
-a[href*="unicorn.studio"] {
-  display: none !important;
-}
-
 .light-theme {
   filter: invert(1) hue-rotate(180deg);
   background-color: #ffffff;
@@ -31,8 +26,4 @@ a[href*="unicorn.studio"] {
 .light-theme .terminal-window,
 .light-theme .revert-theme {
   filter: invert(1) hue-rotate(180deg);
-}
-
-.light-theme [data-us-project] {
-  display: none !important;
 }
