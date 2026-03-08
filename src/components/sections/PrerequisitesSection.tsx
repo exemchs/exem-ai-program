@@ -11,6 +11,7 @@ import {
   Copy,
   Check,
   AlertCircle,
+  X,
 } from "lucide-react";
 import SectionHeading from "../common/SectionHeading";
 import { OS_KEYS, type OsType } from "../../constants/os";
@@ -33,7 +34,13 @@ function PopupOverlay({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-white rounded-2xl p-6 max-w-lg w-full mx-6 shadow-2xl text-center" onClick={(e) => e.stopPropagation()}>
+      <div className="relative bg-white rounded-2xl p-6 max-w-lg w-full mx-6 shadow-2xl text-center" onClick={(e) => e.stopPropagation()}>
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-[#9CA3AF] hover:text-[#1a2234] transition-colors cursor-pointer"
+        >
+          <X size={20} />
+        </button>
         <p className="text-lg font-normal text-[#1a2234] mb-1">
           설치가 어려운 비전공자는
         </p>
@@ -218,7 +225,7 @@ export default function PrerequisitesSection({
 
   return (
     <>
-    <section id="prerequisites" className="py-28 relative">
+    <section id="prerequisites" className="py-16 md:py-28 relative">
       <div className="max-w-5xl mx-auto px-6">
         <SectionHeading subtitle="Prerequisites" align="center">
           사전 세팅,
@@ -282,7 +289,7 @@ export default function PrerequisitesSection({
       )}
     </section>
 
-    <section className="py-28 relative">
+    <section className="py-16 md:py-28 relative">
       <div className="max-w-5xl mx-auto px-6">
         <div className="max-w-3xl mx-auto">
           <SectionHeading subtitle="Installation" align="center">

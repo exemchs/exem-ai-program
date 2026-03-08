@@ -22,7 +22,7 @@ export default function WhyNowSection() {
   ];
 
   return (
-    <section id="why-now" className="py-28 relative">
+    <section id="why-now" className="py-16 md:py-28 relative">
       <div className="max-w-5xl mx-auto px-6">
         <SectionHeading subtitle="Why Now">
           AI 적용 타이밍,
@@ -38,7 +38,7 @@ export default function WhyNowSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="p-8 rounded-3xl bg-white border border-[#E2E5EB] hover:-translate-y-2 hover:shadow-lg hover:border-[#3B82F6]/30 transition-all duration-300 group"
+              className="p-6 md:p-8 rounded-2xl md:rounded-3xl bg-white border border-[#E2E5EB] hover:-translate-y-2 hover:shadow-lg hover:border-[#3B82F6]/30 transition-all duration-300 group"
             >
               <div className="w-12 h-12 rounded-2xl bg-[#EFF6FF] flex items-center justify-center text-[#3B82F6] mb-6 group-hover:scale-110 transition-transform">
                 {item.icon}

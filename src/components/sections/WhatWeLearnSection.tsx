@@ -13,19 +13,19 @@ const terminalContent = [
     ],
   },
   {
-    user: "Notion에 있는 이번 주 회의록 가져와서, 결정사항만 뽑아 Mattermost 채널에 올려줘.",
+    user: "Notion에 있는 이번 주 회의록 가져와서, 결정사항만 뽑아 정리해줘.",
     claude: [
       "네, Notion MCP에 연결하여 회의록을 가져오겠습니다.",
-      "Fetching from Notion → Posting to Mattermost #decisions...",
-      "완료했습니다. 결정사항 5건을 #decisions 채널에 전송했습니다.",
+      "Fetching from Notion → Extracting decisions...",
+      "완료했습니다. 결정사항 5건을 정리하여 decisions.md 파일로 저장했습니다.",
     ],
   },
   {
-    user: "매일 아침 9시에 ClickUp 티켓 현황 정리해서 팀 채널에 자동으로 보내는 스크립트 만들어줘.",
+    user: "Figma에서 이번 스프린트 디자인 변경사항 가져와서 컴포넌트별로 정리해줘.",
     claude: [
-      "네, ClickUp API와 Mattermost 연동 자동화 스크립트를 만들겠습니다.",
-      "Creating cron job + automation script...",
-      "완료했습니다. 매일 09:00에 ClickUp 현황이 자동으로 팀 채널에 전송됩니다.",
+      "네, Figma MCP에 연결하여 디자인 파일을 분석하겠습니다.",
+      "Reading Figma file → Comparing component changes...",
+      "완료했습니다. 변경된 컴포넌트 8개를 design-changes.md로 정리했습니다.",
     ],
   },
 ];
@@ -33,7 +33,7 @@ const terminalContent = [
 const tabs = [
   { title: "내 컴퓨터 파일 접근", icon: <FolderOpen size={18} /> },
   { title: "외부 서비스 연결", icon: <Plug size={18} /> },
-  { title: "반복 업무 자동화", icon: <Repeat size={18} /> },
+  { title: "디자인 협업 자동화", icon: <Repeat size={18} /> },
 ];
 
 export default function WhatWeLearnSection() {
@@ -46,9 +46,9 @@ export default function WhatWeLearnSection() {
   }, []);
 
   return (
-    <section className="py-28">
+    <section className="py-16 md:py-28">
       <div className="max-w-5xl mx-auto px-6">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+        <div className="grid lg:grid-cols-2 gap-10 md:gap-16 items-center">
           <div>
             <SectionHeading subtitle="What We Learn">
               우리가 배우는 건<br />
@@ -71,7 +71,7 @@ export default function WhatWeLearnSection() {
 
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-tr from-[#3B82F6]/10 to-transparent blur-3xl rounded-full"></div>
-            <div className="relative rounded-2xl border border-[#E2E5EB] bg-[#1a1a2e] overflow-hidden shadow-2xl h-[400px] flex flex-col terminal-window">
+            <div className="relative rounded-2xl border border-[#E2E5EB] bg-[#1a1a2e] overflow-hidden shadow-2xl h-[320px] md:h-[400px] flex flex-col terminal-window">
               <div className="h-10 border-b border-white/10 bg-white/5 flex items-center px-4 gap-2 shrink-0">
                 <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
                 <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>

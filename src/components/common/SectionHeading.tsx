@@ -5,10 +5,12 @@ const SectionHeading = ({
   children,
   subtitle,
   align = "left",
+  dark = false,
 }: {
   children: React.ReactNode;
   subtitle?: string;
   align?: "left" | "center";
+  dark?: boolean;
 }) => (
   <div
     className={`mb-12 md:mb-16 ${align === "center" ? "text-center flex flex-col items-center" : ""}`}
@@ -18,7 +20,7 @@ const SectionHeading = ({
         initial={{ opacity: 0, y: 10 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="text-[#6B7280] font-mono text-sm tracking-widest uppercase mb-4"
+        className={`font-mono text-sm tracking-widest uppercase mb-4 ${dark ? "text-white/40" : "text-[#6B7280]"}`}
       >
         {subtitle}
       </motion.p>
@@ -27,7 +29,7 @@ const SectionHeading = ({
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className="text-xl md:text-3xl font-normal tracking-tighter text-[#1a2234] leading-tight"
+      className={`text-xl md:text-3xl font-normal tracking-tighter leading-tight ${dark ? "text-white" : "text-[#1a2234]"}`}
     >
       {children}
     </motion.h2>
