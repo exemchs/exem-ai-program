@@ -33,8 +33,7 @@ export default function ClaudeParticles() {
     const MAX_FALL_SPEED = 9.0;
     const FUNNEL_PULL = 0.08;
     const NECK_THROUGHPUT = 1; // 한 번에 1 덩어리
-    const DRAIN_INTERVAL_MIN = 4;
-    const DRAIN_INTERVAL_MAX = 8;
+    const ROW_DRAIN_TIME = 90; // 한 줄 전체가 빠지는 데 목표 프레임 수
     const PAUSE_DURATION = 1.5;
     const FADE_DURATION = 0.6;
 
@@ -126,7 +125,7 @@ export default function ClaudeParticles() {
     let ambientDots: AmbientDot[] = [];
     let gridMap: Map<string, SandClump> = new Map();
     let drainCounter = 0;
-    let nextDrainAt = DRAIN_INTERVAL_MIN + Math.random() * (DRAIN_INTERVAL_MAX - DRAIN_INTERVAL_MIN);
+    let nextDrainAt = 6;
     let cycleState: "running" | "paused" | "fadeout" | "fadein" = "running";
     let cycleTimer = 0;
     let globalAlpha = 1;
@@ -355,6 +354,12 @@ export default function ClaudeParticles() {
 
       // 즉시 나머지를 중앙으로 compact — 갭 없음
       compactRow(currentBottomRow);
+
+      // 다음 drain 간격: 행 크기에 반비례 (많으면 빠르게, 적으면 느리게)
+      const remaining = rowClumps.length - 1;
+      nextDrainAt = remaining > 0
+        ? Math.max(2, Math.floor(ROW_DRAIN_TIME / (remaining + 1)))
+        : 6;
     }
 
     function updatePhysics(now: number) {
@@ -651,7 +656,6 @@ export default function ClaudeParticles() {
         if (drainCounter >= nextDrainAt) {
           drainTick();
           drainCounter = 0;
-          nextDrainAt = DRAIN_INTERVAL_MIN + Math.random() * (DRAIN_INTERVAL_MAX - DRAIN_INTERVAL_MIN);
         }
         updatePhysics(now);
 
