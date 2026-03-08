@@ -62,7 +62,7 @@ export default function ClaudeParticles() {
     //
     // clump가 통째로 state 전이: resting → sliding → funneling → falling → landed
 
-    type ClumpState = "resting" | "sliding" | "settling" | "shifting" | "funneling" | "falling" | "landed";
+    type ClumpState = "resting" | "sliding" | "settling" | "shifting" | "fading" | "funneling" | "falling" | "landed";
 
     interface SubDot {
       lx: number;  // clump 중심 기준 로컬 x
@@ -93,6 +93,8 @@ export default function ClaudeParticles() {
       // settling: 한 칸 아래로 내려갈 목표
       settleToY: number;
       settleToRow: number;
+      // fading: edge 넘어간 덩어리 자연스럽게 사라짐
+      fadeAlpha: number;
     }
 
     interface LandingSlot {
@@ -125,8 +127,6 @@ export default function ClaudeParticles() {
     let gridMap: Map<string, SandClump> = new Map();
     let drainCounter = 0;
     let nextDrainAt = DRAIN_INTERVAL_MIN + Math.random() * (DRAIN_INTERVAL_MAX - DRAIN_INTERVAL_MIN);
-    // 이미 빠진 격자 위치 추적 — V자 갭 판정에 사용
-    let drainedPositions: Set<string> = new Set();
     let cycleState: "running" | "paused" | "fadeout" | "fadein" = "running";
     let cycleTimer = 0;
     let globalAlpha = 1;
@@ -192,6 +192,7 @@ export default function ClaudeParticles() {
             gridCol: col,
             settleToY: 0,
             settleToRow: 0,
+            fadeAlpha: 1,
           };
 
           clumps.push(clump);
@@ -280,19 +281,41 @@ export default function ClaudeParticles() {
 
     // ═══ 드레인 시스템 ═══
     //
-    // 1. 중앙 덩어리부터 빠짐 (sliding → funneling → falling)
-    // 2. 빈자리를 경사면에서 채움: 좌/우 교대로 가장 안쪽 덩어리가 중앙으로 shifting
-    // 3. shifting 완료 → 다시 중앙 덩어리 빠짐 → 반복
-    // 4. 바닥행이 전부 비면 → 윗줄 전체가 한 칸 아래로 settling
+    // 1. 중앙 덩어리가 빠짐 (sliding → funneling → falling)
+    // 2. 빠지는 즉시 양쪽 전체가 중앙 방향으로 한 칸씩 밀림 (갭 없음)
+    // 3. 다음 drain tick에서 새 중앙이 빠짐 → 반복
+    // 4. 바닥행 전부 비면 → 윗줄 전체 settling (edge 밖은 fadeout)
 
-    let nextSide: "left" | "right" = "left";
-    let drainPhase: "drain-center" | "shift-to-center" | "settling" = "drain-center";
     let currentBottomRow = -1;
 
+    // 바닥행의 남은 덩어리를 cx 기준으로 갭 없이 재배치 (즉시 shifting)
+    function compactRow(rowNum: number) {
+      const rowClumps = clumps.filter(
+        c => c.gridRow === rowNum && (c.state === "resting" || c.state === "shifting")
+      );
+      if (rowClumps.length === 0) return;
+
+      // 현재 x 순서대로 정렬
+      rowClumps.sort((a, b) => a.x - b.x);
+
+      // cx 중심으로 빈틈 없이 재배치
+      const totalWidth = (rowClumps.length - 1) * CLUMP_STEP;
+      const startX = cx - totalWidth / 2;
+
+      for (let i = 0; i < rowClumps.length; i++) {
+        const newX = startX + i * CLUMP_STEP;
+        if (Math.abs(rowClumps[i].x - newX) > 2) {
+          gridMap.delete(gridKey(rowClumps[i].gridRow, rowClumps[i].gridCol));
+          rowClumps[i].state = "shifting";
+          rowClumps[i].targetX = newX;
+          rowClumps[i].targetY = rowClumps[i].y;
+          rowClumps[i].vx = 0;
+        }
+      }
+    }
+
     function drainTick() {
-      // shifting 중이면 완료될 때까지 대기
-      if (clumps.some(c => c.state === "shifting")) return;
-      // settling 중이면 완료될 때까지 대기
+      // settling/fading 중이면 대기
       if (clumps.some(c => c.state === "settling")) return;
 
       const resting = clumps.filter(c => c.state === "resting");
@@ -305,7 +328,7 @@ export default function ClaudeParticles() {
       const rowClumps = resting.filter(c => c.gridRow === currentBottomRow);
 
       if (rowClumps.length === 0) {
-        // 바닥행 비었음 → settling
+        // 바닥행 비었음 → 윗줄 settling
         const aboveRow = currentBottomRow - 1;
         const aboveClumps = resting.filter(c => c.gridRow === aboveRow);
 
@@ -313,8 +336,6 @@ export default function ClaudeParticles() {
           const stillResting = clumps.filter(c => c.state === "resting");
           if (stillResting.length === 0) return;
           currentBottomRow = stillResting.reduce((max, c) => Math.max(max, c.gridRow), 0);
-          drainPhase = "drain-center";
-          nextSide = "left";
           return;
         }
 
@@ -328,62 +349,20 @@ export default function ClaudeParticles() {
         }
 
         currentBottomRow = aboveRow;
-        drainPhase = "drain-center";
-        nextSide = "left";
         return;
       }
 
-      if (drainPhase === "drain-center") {
-        // 중앙에 가장 가까운 덩어리를 drain
-        const sorted = [...rowClumps].sort(
-          (a, b) => Math.abs(a.x - cx) - Math.abs(b.x - cx)
-        );
-        const center = sorted[0];
-        center.state = "sliding";
-        assignLandingSlot(center);
-        gridMap.delete(gridKey(center.gridRow, center.gridCol));
+      // 중앙에 가장 가까운 덩어리를 drain
+      const sorted = [...rowClumps].sort(
+        (a, b) => Math.abs(a.x - cx) - Math.abs(b.x - cx)
+      );
+      const center = sorted[0];
+      center.state = "sliding";
+      assignLandingSlot(center);
+      gridMap.delete(gridKey(center.gridRow, center.gridCol));
 
-        // 남은 clump이 있으면 다음에 shift, 없으면 계속 drain-center
-        if (rowClumps.length > 1) {
-          drainPhase = "shift-to-center";
-        }
-
-      } else if (drainPhase === "shift-to-center") {
-        // 경사면에서 가장 안쪽(중앙에 가까운) 덩어리를 중앙으로 shift
-        const leftClumps = rowClumps
-          .filter(c => c.x < cx)
-          .sort((a, b) => b.x - a.x); // 중앙에 가까운 순
-        const rightClumps = rowClumps
-          .filter(c => c.x >= cx)
-          .sort((a, b) => a.x - b.x); // 중앙에 가까운 순
-
-        let picked: SandClump | null = null;
-
-        if (nextSide === "left" && leftClumps.length > 0) {
-          picked = leftClumps[0];
-          nextSide = "right";
-        } else if (nextSide === "right" && rightClumps.length > 0) {
-          picked = rightClumps[0];
-          nextSide = "left";
-        } else if (leftClumps.length > 0) {
-          picked = leftClumps[0];
-          nextSide = "right";
-        } else if (rightClumps.length > 0) {
-          picked = rightClumps[0];
-          nextSide = "left";
-        }
-
-        if (picked) {
-          picked.state = "shifting";
-          picked.targetX = cx; // 중앙으로
-          picked.targetY = picked.y; // 같은 Y
-          picked.vx = 0;
-          gridMap.delete(gridKey(picked.gridRow, picked.gridCol));
-        }
-
-        // shifting 완료 후 다시 center drain
-        drainPhase = "drain-center";
-      }
+      // 즉시 나머지를 중앙으로 compact — 갭 없음
+      compactRow(currentBottomRow);
     }
 
     function updatePhysics(now: number) {
@@ -399,7 +378,7 @@ export default function ClaudeParticles() {
             break;
 
           case "settling": {
-            // 한 칸 아래로 중력 낙하 → 도착하면 resting
+            // 한 칸 아래로 중력 낙하 → 도착하면 resting or fading
             c.vy += GRAVITY * 0.6;
             c.vy = Math.min(c.vy, 3.0);
             c.y += c.vy;
@@ -411,16 +390,27 @@ export default function ClaudeParticles() {
               c.gridRow = c.settleToRow;
               c.homeY = c.settleToY;
 
-              // 새 위치가 hourglass edge 밖이면 → 바로 sliding으로 빠짐
+              // 새 위치가 hourglass edge 밖이면 → fadeout으로 자연스럽게 사라짐
               const maxXAtNewY = hgMaxXAtY(c.y) * 0.85;
               if (maxXAtNewY <= 0 || Math.abs(c.x - cx) > maxXAtNewY) {
-                c.state = "sliding";
-                assignLandingSlot(c);
+                c.state = "fading";
+                c.fadeAlpha = 1;
               } else {
                 c.state = "resting";
                 gridMap.set(gridKey(c.gridRow, c.gridCol), c);
               }
             }
+            break;
+          }
+
+          case "fading": {
+            // edge 밖 덩어리가 자연스럽게 사라짐
+            c.fadeAlpha -= 0.02;
+            // 내려오면서 살짝 아래로 + 바깥으로 흩어짐
+            c.vy += GRAVITY * 0.2;
+            c.y += c.vy;
+            const fadeDir = c.x < cx ? -0.3 : 0.3;
+            c.x += fadeDir;
             break;
           }
 
@@ -542,6 +532,11 @@ export default function ClaudeParticles() {
           const timeSinceLanding = now - clump.landedAt;
           const landPulse = Math.max(0, 1 - timeSinceLanding / 1.0);
           alpha += landPulse * 0.4;
+        }
+
+        // fading 상태: fadeAlpha 적용
+        if (clump.state === "fading") {
+          alpha *= Math.max(0, clump.fadeAlpha);
         }
 
         alpha *= globalAlpha;
@@ -680,7 +675,9 @@ export default function ClaudeParticles() {
         }
         updatePhysics(now);
 
-        const allLanded = clumps.length > 0 && clumps.every(c => c.state === "landed");
+        const allLanded = clumps.length > 0 && clumps.every(
+          c => c.state === "landed" || (c.state === "fading" && c.fadeAlpha <= 0)
+        );
         if (allLanded) {
           cycleState = "paused";
           cycleTimer = 0;
@@ -704,6 +701,7 @@ export default function ClaudeParticles() {
             c.vy = 0;
             c.trail = [];
             c.landedAt = 0;
+            c.fadeAlpha = 1;
           });
           // gridMap 재구축
           gridMap.clear();
@@ -711,9 +709,6 @@ export default function ClaudeParticles() {
             gridMap.set(gridKey(c.gridRow, c.gridCol), c);
           }
           landingSlots.forEach(s => s.taken = false);
-          drainedPositions.clear();
-          nextSide = "left";
-          drainPhase = "drain-center";
           currentBottomRow = -1;
           drainCounter = 0;
           cycleState = "fadein";
@@ -732,6 +727,7 @@ export default function ClaudeParticles() {
       drawEdge(now);
 
       for (const c of clumps) {
+        if (c.state === "fading" && c.fadeAlpha <= 0) continue;
         renderClump(c, now, now);
       }
 
