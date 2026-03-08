@@ -358,22 +358,13 @@ export default function ClaudeParticles() {
           return;
         }
 
-        // 전체 한 줄 동시에 내려보냄
+        // 전체 한 줄 동시에 한 칸 아래로
         for (const c of aboveClumps) {
-          const newY = c.y + CLUMP_STEP;
-          const maxXAtNew = hgMaxXAtY(newY) * 0.85;
-
           gridMap.delete(gridKey(c.gridRow, c.gridCol));
-
-          if (maxXAtNew > CLUMP_SIZE && Math.abs(c.x - cx) <= maxXAtNew) {
-            c.state = "settling";
-            c.settleToY = newY;
-            c.settleToRow = currentBottomRow;
-            c.vy = 0;
-          } else {
-            c.state = "sliding";
-            assignLandingSlot(c);
-          }
+          c.state = "settling";
+          c.settleToY = c.y + CLUMP_STEP;
+          c.settleToRow = currentBottomRow;
+          c.vy = 0;
         }
 
         currentBottomRow = aboveRow;
@@ -404,10 +395,18 @@ export default function ClaudeParticles() {
               c.y = c.settleToY;
               c.vy = 0;
               c.vx = 0;
-              c.state = "resting";
               c.gridRow = c.settleToRow;
               c.homeY = c.settleToY;
-              gridMap.set(gridKey(c.gridRow, c.gridCol), c);
+
+              // 새 위치가 hourglass edge 밖이면 → 바로 sliding으로 빠짐
+              const maxXAtNewY = hgMaxXAtY(c.y) * 0.85;
+              if (maxXAtNewY <= 0 || Math.abs(c.x - cx) > maxXAtNewY) {
+                c.state = "sliding";
+                assignLandingSlot(c);
+              } else {
+                c.state = "resting";
+                gridMap.set(gridKey(c.gridRow, c.gridCol), c);
+              }
             }
             break;
           }
