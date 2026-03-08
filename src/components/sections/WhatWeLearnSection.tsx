@@ -50,16 +50,10 @@ export default function WhatWeLearnSection() {
             </SectionHeading>
             <div className="space-y-6 mb-12">
               <p className="text-xl text-zinc-400 leading-relaxed">
-                AI가{" "}
-                <strong className="text-orange-500 font-bold">
-                  내 생각대로
-                </strong>{" "}
-                계획을 세우고, 자료를 분석하고, 일할 수 있도록 시스템을 만드는
-                법을 배웁니다.
+                코드가 아니라, 일하는 방식을 바꾸는 겁니다.
               </p>
               <p className="text-xl text-zinc-400 leading-relaxed">
-                코드를 직접 작성하는 게 아닙니다. 한국어로 원하는 걸 말하면,
-                Claude Code가 계획을 세우고 실행합니다.
+                하고 싶은 일을 말로 전하면 됩니다.
               </p>
             </div>
 
