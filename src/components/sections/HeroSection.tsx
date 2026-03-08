@@ -2,7 +2,18 @@ import ClaudeParticles from "../common/ClaudeParticles";
 
 export default function HeroSection() {
   return (
-    <section className="min-h-screen flex items-center justify-center bg-[#100d0a] relative overflow-hidden">
+    <section className="min-h-screen flex items-center justify-center relative overflow-hidden"
+      style={{ backgroundColor: "#110f0d" }}
+    >
+      {/* Antimetal exact gradient extracted from reference */}
+      <div
+        className="absolute inset-0 z-[1] pointer-events-none"
+        style={{
+          background:
+            "linear-gradient(180deg, #110f0d 0%, #12100e 20%, #191510 30%, #211911 40%, #2b1f14 50%, #3d2918 60%, #55381d 70%, #7c5229 80%, #c58d46 90%, #ddb162 95%, #f9dc91 100%)",
+        }}
+      />
+
       <ClaudeParticles />
 
       <div className="relative z-10 max-w-5xl mx-auto px-6 w-full flex flex-col items-center text-center">
