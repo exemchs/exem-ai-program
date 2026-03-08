@@ -345,12 +345,11 @@ export default function ClaudeParticles() {
         }
 
       } else {
-        // settling: 윗줄에서 1개씩 한 칸 아래로
+        // settling: 윗줄 전체가 한번에 한 칸 아래로
         const aboveRow = currentBottomRow - 1;
         const aboveClumps = resting.filter(c => c.gridRow === aboveRow);
 
         if (aboveClumps.length === 0) {
-          // 윗줄도 비면 → 다시 draining, 새 바닥행 찾기
           const stillResting = clumps.filter(c => c.state === "resting");
           if (stillResting.length === 0) return;
           currentBottomRow = stillResting.reduce((max, c) => Math.max(max, c.gridRow), 0);
@@ -359,36 +358,27 @@ export default function ClaudeParticles() {
           return;
         }
 
-        // 바깥쪽부터 1개 선택
-        const picked = pickAlternating(aboveClumps, true);
-        if (picked) {
-          const newY = picked.y + CLUMP_STEP;
+        // 전체 한 줄 동시에 내려보냄
+        for (const c of aboveClumps) {
+          const newY = c.y + CLUMP_STEP;
           const maxXAtNew = hgMaxXAtY(newY) * 0.85;
 
-          gridMap.delete(gridKey(picked.gridRow, picked.gridCol));
+          gridMap.delete(gridKey(c.gridRow, c.gridCol));
 
-          if (maxXAtNew > CLUMP_SIZE && Math.abs(picked.x - cx) <= maxXAtNew) {
-            // hourglass 안 → settling (한 칸 아래로 떨어져서 resting)
-            picked.state = "settling";
-            picked.settleToY = newY;
-            picked.settleToRow = currentBottomRow;
-            picked.vy = 0;
+          if (maxXAtNew > CLUMP_SIZE && Math.abs(c.x - cx) <= maxXAtNew) {
+            c.state = "settling";
+            c.settleToY = newY;
+            c.settleToRow = currentBottomRow;
+            c.vy = 0;
           } else {
-            // hourglass 밖 → sliding으로 목을 향해 빠짐
-            picked.state = "sliding";
-            assignLandingSlot(picked);
+            c.state = "sliding";
+            assignLandingSlot(c);
           }
         }
 
-        // 윗줄 다 내려왔으면 → 새 바닥행 drain 시작
-        const remainAbove = clumps.filter(c =>
-          c.state === "resting" && c.gridRow === aboveRow
-        );
-        if (remainAbove.length === 0) {
-          currentBottomRow = aboveRow;
-          drainPhase = "draining";
-          nextSide = "left";
-        }
+        currentBottomRow = aboveRow;
+        drainPhase = "draining";
+        nextSide = "left";
       }
     }
 
