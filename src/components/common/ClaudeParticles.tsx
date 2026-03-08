@@ -320,8 +320,9 @@ export default function ClaudeParticles() {
       const resting = clumps.filter(c => c.state === "resting");
       if (resting.length === 0) return;
 
-      // 항상 실제 resting 위치에서 바닥행 재계산
-      currentBottomRow = resting.reduce((max, c) => Math.max(max, c.gridRow), 0);
+      if (currentBottomRow < 0) {
+        currentBottomRow = resting.reduce((max, c) => Math.max(max, c.gridRow), 0);
+      }
 
       const rowClumps = resting.filter(c => c.gridRow === currentBottomRow);
 
