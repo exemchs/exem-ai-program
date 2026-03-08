@@ -62,7 +62,7 @@ export default function ClaudeParticles() {
     //
     // clump가 통째로 state 전이: resting → sliding → funneling → falling → landed
 
-    type ClumpState = "resting" | "sliding" | "settling" | "funneling" | "falling" | "landed";
+    type ClumpState = "resting" | "sliding" | "settling" | "shifting" | "funneling" | "falling" | "landed";
 
     interface SubDot {
       lx: number;  // clump 중심 기준 로컬 x
@@ -280,44 +280,21 @@ export default function ClaudeParticles() {
 
     // ═══ 드레인 시스템 ═══
     //
-    // draining: 바닥행에서 바깥쪽부터 좌/우 교대로 1개씩 sliding
-    // settling: 바닥행이 비면 윗줄에서 1개씩 교대로 한 칸 아래로 내려옴
-    //           내려와서 resting → 다시 draining
+    // 1. 중앙 덩어리부터 빠짐 (sliding → funneling → falling)
+    // 2. 빈자리를 경사면에서 채움: 좌/우 교대로 가장 안쪽 덩어리가 중앙으로 shifting
+    // 3. shifting 완료 → 다시 중앙 덩어리 빠짐 → 반복
+    // 4. 바닥행이 전부 비면 → 윗줄 전체가 한 칸 아래로 settling
 
     let nextSide: "left" | "right" = "left";
-    let drainPhase: "draining" | "settling" = "draining";
+    let drainPhase: "drain-center" | "shift-to-center" | "settling" = "drain-center";
     let currentBottomRow = -1;
 
-    function pickAlternating(
-      list: SandClump[],
-      outerFirst: boolean
-    ): SandClump | null {
-      const leftClumps = list
-        .filter(c => c.x < cx)
-        .sort((a, b) => outerFirst ? a.x - b.x : b.x - a.x);
-      const rightClumps = list
-        .filter(c => c.x >= cx)
-        .sort((a, b) => outerFirst ? b.x - a.x : a.x - b.x);
-
-      let picked: SandClump | null = null;
-
-      if (nextSide === "left" && leftClumps.length > 0) {
-        picked = leftClumps[0];
-        nextSide = "right";
-      } else if (nextSide === "right" && rightClumps.length > 0) {
-        picked = rightClumps[0];
-        nextSide = "left";
-      } else if (leftClumps.length > 0) {
-        picked = leftClumps[0];
-        nextSide = "right";
-      } else if (rightClumps.length > 0) {
-        picked = rightClumps[0];
-        nextSide = "left";
-      }
-      return picked;
-    }
-
     function drainTick() {
+      // shifting 중이면 완료될 때까지 대기
+      if (clumps.some(c => c.state === "shifting")) return;
+      // settling 중이면 완료될 때까지 대기
+      if (clumps.some(c => c.state === "settling")) return;
+
       const resting = clumps.filter(c => c.state === "resting");
       if (resting.length === 0) return;
 
@@ -325,27 +302,10 @@ export default function ClaudeParticles() {
         currentBottomRow = resting.reduce((max, c) => Math.max(max, c.gridRow), 0);
       }
 
-      if (drainPhase === "draining") {
-        const rowClumps = resting.filter(c => c.gridRow === currentBottomRow);
+      const rowClumps = resting.filter(c => c.gridRow === currentBottomRow);
 
-        if (rowClumps.length === 0) {
-          // 바닥행이 비었으면 → settling 모드
-          drainPhase = "settling";
-          nextSide = "left";
-          drainTick(); // 바로 settling 시작
-          return;
-        }
-
-        // 바깥쪽부터 좌/우 교대
-        const picked = pickAlternating(rowClumps, true);
-        if (picked) {
-          picked.state = "sliding";
-          assignLandingSlot(picked);
-          gridMap.delete(gridKey(picked.gridRow, picked.gridCol));
-        }
-
-      } else {
-        // settling: 윗줄 전체가 한번에 한 칸 아래로
+      if (rowClumps.length === 0) {
+        // 바닥행 비었음 → settling
         const aboveRow = currentBottomRow - 1;
         const aboveClumps = resting.filter(c => c.gridRow === aboveRow);
 
@@ -353,12 +313,12 @@ export default function ClaudeParticles() {
           const stillResting = clumps.filter(c => c.state === "resting");
           if (stillResting.length === 0) return;
           currentBottomRow = stillResting.reduce((max, c) => Math.max(max, c.gridRow), 0);
-          drainPhase = "draining";
+          drainPhase = "drain-center";
           nextSide = "left";
           return;
         }
 
-        // 전체 한 줄 동시에 한 칸 아래로
+        // 윗줄 전체 한 칸 아래로
         for (const c of aboveClumps) {
           gridMap.delete(gridKey(c.gridRow, c.gridCol));
           c.state = "settling";
@@ -368,8 +328,61 @@ export default function ClaudeParticles() {
         }
 
         currentBottomRow = aboveRow;
-        drainPhase = "draining";
+        drainPhase = "drain-center";
         nextSide = "left";
+        return;
+      }
+
+      if (drainPhase === "drain-center") {
+        // 중앙에 가장 가까운 덩어리를 drain
+        const sorted = [...rowClumps].sort(
+          (a, b) => Math.abs(a.x - cx) - Math.abs(b.x - cx)
+        );
+        const center = sorted[0];
+        center.state = "sliding";
+        assignLandingSlot(center);
+        gridMap.delete(gridKey(center.gridRow, center.gridCol));
+
+        // 남은 clump이 있으면 다음에 shift, 없으면 계속 drain-center
+        if (rowClumps.length > 1) {
+          drainPhase = "shift-to-center";
+        }
+
+      } else if (drainPhase === "shift-to-center") {
+        // 경사면에서 가장 안쪽(중앙에 가까운) 덩어리를 중앙으로 shift
+        const leftClumps = rowClumps
+          .filter(c => c.x < cx)
+          .sort((a, b) => b.x - a.x); // 중앙에 가까운 순
+        const rightClumps = rowClumps
+          .filter(c => c.x >= cx)
+          .sort((a, b) => a.x - b.x); // 중앙에 가까운 순
+
+        let picked: SandClump | null = null;
+
+        if (nextSide === "left" && leftClumps.length > 0) {
+          picked = leftClumps[0];
+          nextSide = "right";
+        } else if (nextSide === "right" && rightClumps.length > 0) {
+          picked = rightClumps[0];
+          nextSide = "left";
+        } else if (leftClumps.length > 0) {
+          picked = leftClumps[0];
+          nextSide = "right";
+        } else if (rightClumps.length > 0) {
+          picked = rightClumps[0];
+          nextSide = "left";
+        }
+
+        if (picked) {
+          picked.state = "shifting";
+          picked.targetX = cx; // 중앙으로
+          picked.targetY = picked.y; // 같은 Y
+          picked.vx = 0;
+          gridMap.delete(gridKey(picked.gridRow, picked.gridCol));
+        }
+
+        // shifting 완료 후 다시 center drain
+        drainPhase = "drain-center";
       }
     }
 
@@ -407,6 +420,26 @@ export default function ClaudeParticles() {
                 c.state = "resting";
                 gridMap.set(gridKey(c.gridRow, c.gridCol), c);
               }
+            }
+            break;
+          }
+
+          case "shifting": {
+            // 경사면에서 중앙으로 수평 이동
+            const dxToTarget = c.targetX - c.x;
+            const dir = Math.sign(dxToTarget);
+            c.vx += dir * 0.15;
+            c.vx *= 0.88;
+            c.vx = clamp(c.vx, -2.5, 2.5);
+            c.x += c.vx;
+
+            // 도착 판정
+            if (Math.abs(c.x - c.targetX) < 1.5 && Math.abs(c.vx) < 0.3) {
+              c.x = c.targetX;
+              c.vx = 0;
+              c.state = "resting";
+              c.homeX = c.x;
+              gridMap.set(gridKey(c.gridRow, c.gridCol), c);
             }
             break;
           }
@@ -680,7 +713,7 @@ export default function ClaudeParticles() {
           landingSlots.forEach(s => s.taken = false);
           drainedPositions.clear();
           nextSide = "left";
-          drainPhase = "draining";
+          drainPhase = "drain-center";
           currentBottomRow = -1;
           drainCounter = 0;
           cycleState = "fadein";
