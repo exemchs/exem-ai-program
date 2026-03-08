@@ -28,9 +28,9 @@ export default function HeroSection() {
     };
   }, []);
 
-  // Text 1 visible: progress 0~0.35, fade out 0.35~0.5
-  const text1Opacity = progress <= 0.35 ? 1 : progress >= 0.5 ? 0 : 1 - (progress - 0.35) / 0.15;
-  // Text 2 visible: fade in 0.5~0.65, stay 0.65~1
+  // Text 1: visible at start, fade out as we scroll
+  const text1Opacity = progress <= 0.3 ? 1 : progress >= 0.45 ? 0 : 1 - (progress - 0.3) / 0.15;
+  // Text 2: fade in after text 1 is gone
   const text2Opacity = progress <= 0.5 ? 0 : progress >= 0.65 ? 1 : (progress - 0.5) / 0.15;
 
   return (
@@ -49,39 +49,37 @@ export default function HeroSection() {
           #fef9f0 100%)`,
       }}
     >
-      {/* Sticky container */}
+      {/* Sticky container — stays fixed on screen */}
       <div className="h-screen w-full sticky top-0 flex items-center justify-center">
-        <div className="relative z-10 max-w-4xl mx-auto px-6 w-full flex flex-col items-center text-center">
 
-          {/* Text Group 1 */}
-          <div
-            className="absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-100"
-            style={{ opacity: text1Opacity, pointerEvents: text1Opacity === 0 ? "none" : "auto" }}
-          >
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-semibold tracking-tighter text-white leading-[1.1]">
-              AI,{" "}
-              <span className="text-transparent bg-clip-text bg-linear-to-r from-orange-300 to-amber-100">
-                클로드 코드
-              </span>
-              로
-              <br />
-              시작하세요.
-            </h1>
-          </div>
-
-          {/* Text Group 2 */}
-          <div
-            className="absolute inset-0 flex flex-col items-center justify-center transition-opacity duration-100"
-            style={{ opacity: text2Opacity, pointerEvents: text2Opacity === 0 ? "none" : "auto" }}
-          >
-            <h2 className="text-4xl md:text-6xl lg:text-7xl font-semibold tracking-tighter text-white leading-[1.1]">
-              기술과 개발을 몰라도
-              <br />
-              누구나 할 수 있습니다.
-            </h2>
-          </div>
-
+        {/* Text Group 1 — white on dark background */}
+        <div
+          className="absolute inset-0 flex flex-col items-center justify-center px-6"
+          style={{ opacity: text1Opacity, pointerEvents: text1Opacity === 0 ? "none" : "auto" }}
+        >
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-semibold tracking-tighter text-white leading-[1.1] text-center">
+            AI,{" "}
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-orange-300 to-amber-100">
+              클로드 코드
+            </span>
+            로
+            <br />
+            시작하세요.
+          </h1>
         </div>
+
+        {/* Text Group 2 — dark on light background */}
+        <div
+          className="absolute inset-0 flex flex-col items-center justify-center px-6"
+          style={{ opacity: text2Opacity, pointerEvents: text2Opacity === 0 ? "none" : "auto" }}
+        >
+          <h2 className="text-4xl md:text-6xl lg:text-7xl font-semibold tracking-tighter text-zinc-900 leading-[1.1] text-center">
+            기술과 개발을 몰라도
+            <br />
+            누구나 할 수 있습니다.
+          </h2>
+        </div>
+
       </div>
     </section>
   );
