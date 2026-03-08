@@ -232,28 +232,167 @@ export default function ClaudeParticles() {
       }
     }
 
-    // ═══ 렌더링 (Step 1: resting만) ═══
-    function renderDot(dot: SandDot, t: number) {
+    // ═══ Step 2: 기본 물리 — funneling + falling + 착지 ═══
+    const GRAVITY = 0.12;
+    const MAX_FUNNEL_SPEED = 3.5;
+    const MAX_FALL_SPEED = 5.5;
+    const NECK_THROUGHPUT = 2;
+    const DRAIN_INTERVAL_MIN = 3;
+    const DRAIN_INTERVAL_MAX = 7;
+    let drainCounter = 0;
+    let nextDrainAt = DRAIN_INTERVAL_MIN + Math.random() * (DRAIN_INTERVAL_MAX - DRAIN_INTERVAL_MIN);
+
+    function clamp(v: number, min: number, max: number): number {
+      return v < min ? min : v > max ? max : v;
+    }
+
+    function isNearNeck(py: number): boolean {
+      const ny = (py - cy) / hgH;
+      return ny > -0.12 && ny < 0;
+    }
+
+    function assignLandingSlot(dot: SandDot): boolean {
+      const slot = landingSlots.find(s => !s.taken);
+      if (slot) {
+        slot.taken = true;
+        dot.targetX = slot.x;
+        dot.targetY = slot.y;
+        return true;
+      }
+      return false;
+    }
+
+    // 목 근처 resting → funneling (Step 2 한정: 가장자리 슬라이드 없이 목 근처만)
+    function drainTick() {
+      const neckDots = dots.filter(d =>
+        d.state === "resting" && isNearNeck(d.y)
+      );
+      neckDots.sort((a, b) => b.y - a.y);
+      const toFunnel = neckDots.slice(0, NECK_THROUGHPUT);
+      for (const d of toFunnel) {
+        d.state = "funneling";
+        assignLandingSlot(d);
+        gridMap.delete(gridKey(d.gridRow, d.gridCol));
+      }
+    }
+
+    function updatePhysics(now: number) {
+      for (const dot of dots) {
+        // trail 기록
+        if (dot.state === "funneling" || dot.state === "falling") {
+          dot.trail.unshift({ x: dot.x, y: dot.y });
+          if (dot.trail.length > 3) dot.trail.pop();
+        }
+
+        switch (dot.state) {
+          case "resting":
+            break;
+
+          case "funneling": {
+            const dxToNeck = cx - dot.x;
+            dot.vx += dxToNeck * 0.15;
+            dot.vx *= 0.85;
+            dot.vy += GRAVITY * 0.8;
+            dot.vy = Math.min(dot.vy, MAX_FUNNEL_SPEED);
+            dot.x += dot.vx;
+            dot.y += dot.vy;
+
+            const nyF = (dot.y - cy) / hgH;
+            if (nyF > 0.02) {
+              dot.state = "falling";
+            }
+            break;
+          }
+
+          case "falling": {
+            dot.vy += GRAVITY;
+            dot.vy = Math.min(dot.vy, MAX_FALL_SPEED);
+            dot.x += Math.sin(now * 3 + dot.phase) * 0.5;
+            dot.y += dot.vy;
+
+            const maxXF = hgMaxXAtY(dot.y) * 0.88;
+            if (maxXF > 0) {
+              dot.x = clamp(dot.x, cx - maxXF, cx + maxXF);
+            }
+
+            if (dot.y >= dot.targetY) {
+              dot.y = dot.targetY;
+              dot.x = dot.targetX;
+              dot.state = "landed";
+              dot.vy = 0;
+              dot.vx = 0;
+              dot.landedAt = now;
+              dot.trail = [];
+            }
+            break;
+          }
+
+          case "landed":
+            break;
+        }
+      }
+    }
+
+    // ═══ 렌더링 ═══
+    let globalAlpha = 1;
+
+    function renderDot(dot: SandDot, t: number, now: number) {
       const breath = Math.sin(t * dot.speed + dot.phase) * 0.5 + 0.5;
 
       let radius: number, alpha: number;
       if (dot.isCore) {
-        // 중심: 안정적, 크고 진함
         radius = dot.radius * (0.85 + breath * 0.15);
         alpha = 0.6 + breath * 0.2;
       } else {
-        // 가장자리: 유동적, 작고 옅음
         radius = dot.radius * 0.6 * (0.3 + breath * 0.7);
         alpha = 0.2 + breath * 0.2;
       }
       radius = Math.min(radius, MAX_RADIUS);
 
+      // funneling squeeze
+      if (dot.state === "funneling") {
+        const neckDist = Math.abs(dot.y - cy) / (hgH * 0.1);
+        const neckProx = Math.max(0, 1 - neckDist);
+        radius *= 0.6 + 0.4 * (1 - neckProx);
+      }
+
+      // landed 착지 펄스
+      if (dot.state === "landed") {
+        const timeSinceLanding = now - dot.landedAt;
+        const landPulse = Math.max(0, 1 - timeSinceLanding / 1.0);
+        alpha += landPulse * 0.4;
+      }
+
+      alpha *= globalAlpha;
       if (alpha < 0.01 || radius < 0.1) return;
 
-      ctx.beginPath();
-      ctx.arc(dot.x, dot.y, radius, 0, PI2);
-      ctx.fillStyle = `rgba(${DC}, ${alpha})`;
-      ctx.fill();
+      // falling stretch
+      if (dot.state === "falling") {
+        const stretchY = radius * (1 + Math.min(dot.vy * 0.05, 0.8));
+        ctx.beginPath();
+        ctx.ellipse(dot.x, dot.y, radius, stretchY, 0, 0, PI2);
+        ctx.fillStyle = `rgba(${DC}, ${alpha})`;
+        ctx.fill();
+      } else {
+        ctx.beginPath();
+        ctx.arc(dot.x, dot.y, radius, 0, PI2);
+        ctx.fillStyle = `rgba(${DC}, ${alpha})`;
+        ctx.fill();
+      }
+
+      // trail
+      if (dot.state === "funneling" || dot.state === "falling") {
+        for (let i = 0; i < dot.trail.length; i++) {
+          const tr = dot.trail[i];
+          const trailAlpha = 0.15 * (1 - i / dot.trail.length) * globalAlpha;
+          const trailR = radius * 0.6 * (1 - i / dot.trail.length);
+          if (trailAlpha < 0.01 || trailR < 0.1) continue;
+          ctx.beginPath();
+          ctx.arc(tr.x, tr.y, trailR, 0, PI2);
+          ctx.fillStyle = `rgba(${DC}, ${trailAlpha})`;
+          ctx.fill();
+        }
+      }
     }
 
     function drawBackground(t: number) {
@@ -336,19 +475,29 @@ export default function ClaudeParticles() {
       }
     }
 
-    // ═══ 메인 루프 (Step 1: 정적 breathing만) ═══
+    // ═══ 메인 루프 ═══
     function draw(timestamp: number) {
-      const t = timestamp / 1000;
+      const now = timestamp / 1000;
       ctx.clearRect(0, 0, w, h);
 
-      drawBackground(t);
-      drawEdge(t);
-
-      for (const dot of dots) {
-        renderDot(dot, t);
+      // 드레인 tick
+      drainCounter++;
+      if (drainCounter >= nextDrainAt) {
+        drainTick();
+        drainCounter = 0;
+        nextDrainAt = DRAIN_INTERVAL_MIN + Math.random() * (DRAIN_INTERVAL_MAX - DRAIN_INTERVAL_MIN);
       }
 
-      drawAmbient(t);
+      updatePhysics(now);
+
+      drawBackground(now);
+      drawEdge(now);
+
+      for (const dot of dots) {
+        renderDot(dot, now, now);
+      }
+
+      drawAmbient(now);
       animId = requestAnimationFrame(draw);
     }
 
