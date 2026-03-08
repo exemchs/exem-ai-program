@@ -27,15 +27,15 @@ export default function ClaudeParticles() {
     const DOT_RADIUS_MAX = 3.0;
     const MAX_RADIUS = DOT_SPACING * 0.45;
 
-    const GRAVITY = 0.25;
-    const MAX_SLIDE_SPEED = 5.0;
-    const MAX_FUNNEL_SPEED = 6.0;
-    const MAX_FALL_SPEED = 9.0;
-    const FUNNEL_PULL = 0.08;
-    const NECK_THROUGHPUT = 1; // 한 번에 1 덩어리
-    const ROW_DRAIN_TIME = 90; // 한 줄 전체가 빠지는 데 목표 프레임 수
-    const PAUSE_DURATION = 1.5;
-    const FADE_DURATION = 0.6;
+    const GRAVITY = 0.45;
+    const MAX_SLIDE_SPEED = 8.0;
+    const MAX_FUNNEL_SPEED = 10.0;
+    const MAX_FALL_SPEED = 14.0;
+    const FUNNEL_PULL = 0.14;
+    const NECK_THROUGHPUT = 1;
+    const ROW_DRAIN_TIME = 30; // 한 줄 빠지는 목표 프레임 (~0.5초)
+    const PAUSE_DURATION = 1.0;
+    const FADE_DURATION = 0.4;
 
     // ═══ 모래시계 실루엣 ═══
     function hgProfile(ny: number): number {
@@ -358,8 +358,8 @@ export default function ClaudeParticles() {
       // 다음 drain 간격: 행 크기에 반비례 (많으면 빠르게, 적으면 느리게)
       const remaining = rowClumps.length - 1;
       nextDrainAt = remaining > 0
-        ? Math.max(2, Math.floor(ROW_DRAIN_TIME / (remaining + 1)))
-        : 6;
+        ? Math.max(1, Math.floor(ROW_DRAIN_TIME / (remaining + 1)))
+        : 3;
     }
 
     function updatePhysics(now: number) {
@@ -376,8 +376,8 @@ export default function ClaudeParticles() {
 
           case "settling": {
             // 한 칸 아래로 중력 낙하 → 도착하면 resting
-            c.vy += GRAVITY * 0.8;
-            c.vy = Math.min(c.vy, 5.0);
+            c.vy += GRAVITY;
+            c.vy = Math.min(c.vy, 8.0);
             c.y += c.vy;
 
             if (c.y >= c.settleToY) {
@@ -403,9 +403,9 @@ export default function ClaudeParticles() {
             // 경사면에서 중앙으로 수평 이동
             const dxToTarget = c.targetX - c.x;
             const dir = Math.sign(dxToTarget);
-            c.vx += dir * 0.35;
-            c.vx *= 0.85;
-            c.vx = clamp(c.vx, -5.0, 5.0);
+            c.vx += dir * 0.6;
+            c.vx *= 0.82;
+            c.vx = clamp(c.vx, -8.0, 8.0);
             c.x += c.vx;
 
             // 도착 판정
