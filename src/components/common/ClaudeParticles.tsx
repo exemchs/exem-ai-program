@@ -16,11 +16,27 @@ export default function ClaudeParticles() {
     const LC = "95, 78, 38";
     const DC = "210, 192, 140";
 
-    // ═══ 그리드/물리 상수 ═══
-    const GRID_SPACING = 10;
+    // ═══ 상수 ═══
+    // 덩어리(clump) = 4×4 도트 그리드, 간격 10px → 덩어리 크기 30×30px
+    const DOT_SPACING = 10;      // 덩어리 내 도트 간격
+    const CLUMP_DOTS = 4;        // 4×4
+    const CLUMP_SIZE = DOT_SPACING * (CLUMP_DOTS - 1); // 30px
+    const CLUMP_GAP = 8;         // 덩어리 간 여백
+    const CLUMP_STEP = CLUMP_SIZE + CLUMP_GAP; // 38px — 격자 간격
     const DOT_RADIUS_MIN = 1.8;
     const DOT_RADIUS_MAX = 3.0;
-    const MAX_RADIUS = GRID_SPACING * 0.45; // 겹침 방지: 4.5px
+    const MAX_RADIUS = DOT_SPACING * 0.45;
+
+    const GRAVITY = 0.12;
+    const MAX_SLIDE_SPEED = 2.5;
+    const MAX_FUNNEL_SPEED = 3.5;
+    const MAX_FALL_SPEED = 5.5;
+    const FUNNEL_PULL = 0.04;
+    const NECK_THROUGHPUT = 1; // 한 번에 1 덩어리
+    const DRAIN_INTERVAL_MIN = 8;
+    const DRAIN_INTERVAL_MAX = 14;
+    const PAUSE_DURATION = 1.5;
+    const FADE_DURATION = 0.6;
 
     // ═══ 모래시계 실루엣 ═══
     function hgProfile(ny: number): number {
@@ -36,38 +52,42 @@ export default function ClaudeParticles() {
       return hgProfile(ny) * hgW;
     }
 
-    // ═══ Step 1: SandDot + 덩어리(Clump) 시스템 ═══
+    // ═══ 데이터 구조: 덩어리(Clump) 기반 ═══
     //
-    // 계획서 Phase 3-1:
-    //   4×4 덩어리 기준
+    // 각 clump는 4×4 도트 배열을 가짐
     //   E E E E
-    //   E C C E    ← C = core (4개)
-    //   E C C E    ← E = edge
+    //   E C C E    ← C = core (안정적, 크고 진함)
+    //   E C C E    ← E = edge (유동적, 작고 옅음)
     //   E E E E
     //
-    // isCore = clump 내부 중심 2×2 → 크고 진하고 안정적
-    // !isCore = clump 가장자리 → 작고 옅고 유동적
+    // clump가 통째로 state 전이: resting → sliding → funneling → falling → landed
 
-    type DotState = "resting" | "sliding" | "funneling" | "falling" | "landed";
+    type ClumpState = "resting" | "sliding" | "funneling" | "falling" | "landed";
 
-    interface SandDot {
+    interface SubDot {
+      lx: number;  // clump 중심 기준 로컬 x
+      ly: number;  // clump 중심 기준 로컬 y
+      radius: number;
+      phase: number;
+      speed: number;
+      isCore: boolean;
+    }
+
+    interface SandClump {
       id: number;
-      x: number;
-      y: number;
+      x: number;         // 현재 중심 x
+      y: number;         // 현재 중심 y
       homeX: number;
       homeY: number;
       targetX: number;
       targetY: number;
       vx: number;
       vy: number;
-      radius: number;
-      phase: number;
-      speed: number;
-      state: DotState;
-      isCore: boolean;
+      state: ClumpState;
       landedAt: number;
       trail: { x: number; y: number }[];
-      // 그리드 좌표 (행/열 인덱스) — 이웃 탐색용
+      dots: SubDot[];
+      // 그리드 좌표 (clump 단위)
       gridRow: number;
       gridCol: number;
     }
@@ -95,99 +115,97 @@ export default function ClaudeParticles() {
       alpha: number;
     }
 
-    let dots: SandDot[] = [];
+    let clumps: SandClump[] = [];
     let landingSlots: LandingSlot[] = [];
     let edgeDots: EdgeDot[] = [];
     let ambientDots: AmbientDot[] = [];
-    // gridMap: gridRow,gridCol → dot (빠른 이웃 탐색)
-    let gridMap: Map<string, SandDot> = new Map();
+    let gridMap: Map<string, SandClump> = new Map();
+    let drainCounter = 0;
+    let nextDrainAt = DRAIN_INTERVAL_MIN + Math.random() * (DRAIN_INTERVAL_MAX - DRAIN_INTERVAL_MIN);
+    let cycleState: "running" | "paused" | "fadeout" | "fadein" = "running";
+    let cycleTimer = 0;
+    let globalAlpha = 1;
+    let lastTime = 0;
     let nextId = 0;
 
     function gridKey(row: number, col: number): string {
       return `${row},${col}`;
     }
 
-    function rebuildGridMap() {
-      gridMap.clear();
-      for (const d of dots) {
-        if (d.state === "resting") {
-          gridMap.set(gridKey(d.gridRow, d.gridCol), d);
+    function makeSubDots(): SubDot[] {
+      const dots: SubDot[] = [];
+      const half = (CLUMP_DOTS - 1) * DOT_SPACING / 2; // 15
+      for (let r = 0; r < CLUMP_DOTS; r++) {
+        for (let c = 0; c < CLUMP_DOTS; c++) {
+          // 간헐적으로 빈 칸 (자연스러움)
+          if (Math.random() > 0.85) continue;
+          const lx = c * DOT_SPACING - half;
+          const ly = r * DOT_SPACING - half;
+          const isCore = r >= 1 && r <= 2 && c >= 1 && c <= 2;
+          dots.push({
+            lx, ly,
+            radius: DOT_RADIUS_MIN + Math.random() * (DOT_RADIUS_MAX - DOT_RADIUS_MIN),
+            phase: Math.random() * PI2,
+            speed: 2.0 + Math.random() * 3.0,
+            isCore,
+          });
         }
       }
+      return dots;
     }
 
-    // 덩어리 내 위치 판정: 4×4 블록에서 중심 2×2 = core
-    function isCorePosition(localRow: number, localCol: number): boolean {
-      return localRow >= 1 && localRow <= 2 && localCol >= 1 && localCol <= 2;
-    }
-
-    function buildDots() {
-      dots = [];
+    function buildClumps() {
+      clumps = [];
       landingSlots = [];
       gridMap.clear();
       nextId = 0;
 
-      // 상단 그리드 (ny: -0.95 ~ -0.06)
+      // 상단 (ny: -0.95 ~ -0.06)
       const topStartY = cy - hgH * 0.95;
       const topEndY = cy - hgH * 0.06;
+      let row = 0;
 
-      // 그리드 행/열 인덱스 계산
-      const baseRow = Math.floor(topStartY / GRID_SPACING);
-      const baseColCenter = Math.floor(cx / GRID_SPACING);
+      for (let py = topStartY; py <= topEndY; py += CLUMP_STEP) {
+        const maxX = hgMaxXAtY(py) * 0.85;
+        if (maxX < CLUMP_SIZE) continue;
+        let col = 0;
 
-      for (let py = topStartY; py <= topEndY; py += GRID_SPACING) {
-        const maxX = hgMaxXAtY(py) * 0.88;
-        if (maxX < GRID_SPACING) continue;
-        const row = Math.round((py - topStartY) / GRID_SPACING);
-
-        for (let px = cx - maxX; px <= cx + maxX; px += GRID_SPACING) {
-          // 실루엣 내부만
+        for (let px = cx - maxX; px <= cx + maxX; px += CLUMP_STEP) {
           if (Math.abs(px - cx) > maxX) continue;
 
-          const col = Math.round((px - cx) / GRID_SPACING);
-          // 4×4 clump 내 로컬 위치
-          const localRow = ((row % 4) + 4) % 4;
-          const localCol = ((col % 4) + 4) % 4;
-          const isCore = isCorePosition(localRow, localCol);
-
-          const dot: SandDot = {
+          const clump: SandClump = {
             id: nextId++,
-            x: px,
-            y: py,
-            homeX: px,
-            homeY: py,
-            targetX: 0,
-            targetY: 0,
-            vx: 0,
-            vy: 0,
-            radius: DOT_RADIUS_MIN + Math.random() * (DOT_RADIUS_MAX - DOT_RADIUS_MIN),
-            phase: Math.random() * PI2,
-            speed: 2.0 + Math.random() * 3.0,
+            x: px, y: py,
+            homeX: px, homeY: py,
+            targetX: 0, targetY: 0,
+            vx: 0, vy: 0,
             state: "resting",
-            isCore,
             landedAt: 0,
             trail: [],
+            dots: makeSubDots(),
             gridRow: row,
             gridCol: col,
           };
 
-          dots.push(dot);
-          gridMap.set(gridKey(row, col), dot);
+          clumps.push(clump);
+          gridMap.set(gridKey(row, col), clump);
+          col++;
         }
+        row++;
       }
 
-      // 하단 landing slots (ny: +0.06 ~ +0.95), 바닥부터 위로, 중앙부터 바깥으로
+      // 하단 landing slots (ny: +0.06 ~ +0.95), 바닥부터 위로, 중앙부터 바깥
       const bottomStartY = cy + hgH * 0.95;
       const bottomEndY = cy + hgH * 0.06;
 
-      for (let py = bottomStartY; py >= bottomEndY; py -= GRID_SPACING) {
-        const maxX = hgMaxXAtY(py) * 0.88;
-        if (maxX < GRID_SPACING) continue;
+      for (let py = bottomStartY; py >= bottomEndY; py -= CLUMP_STEP) {
+        const maxX = hgMaxXAtY(py) * 0.85;
+        if (maxX < CLUMP_SIZE) continue;
 
         const positions: number[] = [];
-        for (let px = cx; px <= cx + maxX; px += GRID_SPACING) {
+        for (let px = cx; px <= cx + maxX; px += CLUMP_STEP) {
           positions.push(px);
-          if (px !== cx) positions.push(cx - (px - cx));
+          if (Math.abs(px - cx) > CLUMP_STEP * 0.5) positions.push(cx - (px - cx));
         }
         positions.sort((a, b) => Math.abs(a - cx) - Math.abs(b - cx));
 
@@ -232,97 +250,154 @@ export default function ClaudeParticles() {
       }
     }
 
-    // ═══ Step 2: 기본 물리 — funneling + falling + 착지 ═══
-    const GRAVITY = 0.12;
-    const MAX_FUNNEL_SPEED = 3.5;
-    const MAX_FALL_SPEED = 5.5;
-    const NECK_THROUGHPUT = 2;
-    const DRAIN_INTERVAL_MIN = 3;
-    const DRAIN_INTERVAL_MAX = 7;
-    let drainCounter = 0;
-    let nextDrainAt = DRAIN_INTERVAL_MIN + Math.random() * (DRAIN_INTERVAL_MAX - DRAIN_INTERVAL_MIN);
-
+    // ═══ Step 2+3: 물리 + 가장자리 슬라이드 ═══
     function clamp(v: number, min: number, max: number): number {
       return v < min ? min : v > max ? max : v;
     }
 
     function isNearNeck(py: number): boolean {
       const ny = (py - cy) / hgH;
-      return ny > -0.12 && ny < 0;
+      return ny > -0.15 && ny < 0;
     }
 
-    function assignLandingSlot(dot: SandDot): boolean {
+    function assignLandingSlot(clump: SandClump): boolean {
       const slot = landingSlots.find(s => !s.taken);
       if (slot) {
         slot.taken = true;
-        dot.targetX = slot.x;
-        dot.targetY = slot.y;
+        clump.targetX = slot.x;
+        clump.targetY = slot.y;
         return true;
       }
       return false;
     }
 
-    // 목 근처 resting → funneling (Step 2 한정: 가장자리 슬라이드 없이 목 근처만)
+    function hasEmptyBelow(clump: SandClump): boolean {
+      // 바로 아래 격자칸에 resting clump가 없으면 빈 공간
+      const belowKey = gridKey(clump.gridRow + 1, clump.gridCol);
+      return !gridMap.has(belowKey);
+    }
+
     function drainTick() {
-      const neckDots = dots.filter(d =>
-        d.state === "resting" && isNearNeck(d.y)
+      // STEP 1: 목 바로 위 resting 덩어리 → funneling
+      const neckClumps = clumps.filter(c =>
+        c.state === "resting" && isNearNeck(c.y)
       );
-      neckDots.sort((a, b) => b.y - a.y);
-      const toFunnel = neckDots.slice(0, NECK_THROUGHPUT);
-      for (const d of toFunnel) {
-        d.state = "funneling";
-        assignLandingSlot(d);
-        gridMap.delete(gridKey(d.gridRow, d.gridCol));
+      neckClumps.sort((a, b) => b.y - a.y);
+      const toFunnel = neckClumps.slice(0, NECK_THROUGHPUT);
+      for (const c of toFunnel) {
+        c.state = "funneling";
+        assignLandingSlot(c);
+        gridMap.delete(gridKey(c.gridRow, c.gridCol));
+      }
+
+      // STEP 2: V자 경사면 표면 가장자리 덩어리 탐색
+      // 표면 = resting이면서 아래가 비어있는 덩어리
+      // 좌측에서 중앙에 가장 가까운 것, 우측에서 중앙에 가장 가까운 것
+      const surfaceClumps = clumps.filter(c =>
+        c.state === "resting" && hasEmptyBelow(c)
+      );
+
+      let leftEdge: SandClump | null = null;
+      let rightEdge: SandClump | null = null;
+
+      const leftSurface = surfaceClumps
+        .filter(c => c.x < cx - CLUMP_STEP * 0.5)
+        .sort((a, b) => {
+          if (Math.abs(a.y - b.y) > CLUMP_STEP * 0.5) return b.y - a.y;
+          return b.x - a.x;
+        });
+      const rightSurface = surfaceClumps
+        .filter(c => c.x > cx + CLUMP_STEP * 0.5)
+        .sort((a, b) => {
+          if (Math.abs(a.y - b.y) > CLUMP_STEP * 0.5) return b.y - a.y;
+          return a.x - b.x;
+        });
+
+      if (leftSurface.length > 0) leftEdge = leftSurface[0];
+      if (rightSurface.length > 0) rightEdge = rightSurface[0];
+
+      // STEP 3: sliding 전환 (가끔 비대칭)
+      const bothSides = Math.random() > 0.15;
+      if (leftEdge) {
+        leftEdge.state = "sliding";
+        assignLandingSlot(leftEdge);
+        gridMap.delete(gridKey(leftEdge.gridRow, leftEdge.gridCol));
+      }
+      if (rightEdge && bothSides) {
+        rightEdge.state = "sliding";
+        assignLandingSlot(rightEdge);
+        gridMap.delete(gridKey(rightEdge.gridRow, rightEdge.gridCol));
       }
     }
 
     function updatePhysics(now: number) {
-      for (const dot of dots) {
-        // trail 기록
-        if (dot.state === "funneling" || dot.state === "falling") {
-          dot.trail.unshift({ x: dot.x, y: dot.y });
-          if (dot.trail.length > 3) dot.trail.pop();
+      for (const c of clumps) {
+        // trail
+        if (c.state === "funneling" || c.state === "falling") {
+          c.trail.unshift({ x: c.x, y: c.y });
+          if (c.trail.length > 3) c.trail.pop();
         }
 
-        switch (dot.state) {
+        switch (c.state) {
           case "resting":
             break;
 
-          case "funneling": {
-            const dxToNeck = cx - dot.x;
-            dot.vx += dxToNeck * 0.15;
-            dot.vx *= 0.85;
-            dot.vy += GRAVITY * 0.8;
-            dot.vy = Math.min(dot.vy, MAX_FUNNEL_SPEED);
-            dot.x += dot.vx;
-            dot.y += dot.vy;
+          case "sliding": {
+            c.vy += GRAVITY * 0.3;
+            c.vy = Math.min(c.vy, MAX_SLIDE_SPEED);
 
-            const nyF = (dot.y - cy) / hgH;
+            const dxToCenter = cx - c.x;
+            c.vx += dxToCenter * FUNNEL_PULL * 0.5;
+            c.vx *= 0.92;
+
+            c.x += c.vx;
+            c.y += c.vy;
+
+            const maxX = hgMaxXAtY(c.y) * 0.85;
+            c.x = clamp(c.x, cx - maxX, cx + maxX);
+
+            const ny = (c.y - cy) / hgH;
+            if (ny > -0.08) {
+              c.state = "funneling";
+            }
+            break;
+          }
+
+          case "funneling": {
+            const dxToNeck = cx - c.x;
+            c.vx += dxToNeck * 0.15;
+            c.vx *= 0.85;
+            c.vy += GRAVITY * 0.8;
+            c.vy = Math.min(c.vy, MAX_FUNNEL_SPEED);
+            c.x += c.vx;
+            c.y += c.vy;
+
+            const nyF = (c.y - cy) / hgH;
             if (nyF > 0.02) {
-              dot.state = "falling";
+              c.state = "falling";
             }
             break;
           }
 
           case "falling": {
-            dot.vy += GRAVITY;
-            dot.vy = Math.min(dot.vy, MAX_FALL_SPEED);
-            dot.x += Math.sin(now * 3 + dot.phase) * 0.5;
-            dot.y += dot.vy;
+            c.vy += GRAVITY;
+            c.vy = Math.min(c.vy, MAX_FALL_SPEED);
+            c.x += Math.sin(now * 3 + (c.dots[0]?.phase || 0)) * 0.5;
+            c.y += c.vy;
 
-            const maxXF = hgMaxXAtY(dot.y) * 0.88;
+            const maxXF = hgMaxXAtY(c.y) * 0.85;
             if (maxXF > 0) {
-              dot.x = clamp(dot.x, cx - maxXF, cx + maxXF);
+              c.x = clamp(c.x, cx - maxXF, cx + maxXF);
             }
 
-            if (dot.y >= dot.targetY) {
-              dot.y = dot.targetY;
-              dot.x = dot.targetX;
-              dot.state = "landed";
-              dot.vy = 0;
-              dot.vx = 0;
-              dot.landedAt = now;
-              dot.trail = [];
+            if (c.y >= c.targetY) {
+              c.y = c.targetY;
+              c.x = c.targetX;
+              c.state = "landed";
+              c.vy = 0;
+              c.vx = 0;
+              c.landedAt = now;
+              c.trail = [];
             }
             break;
           }
@@ -334,63 +409,69 @@ export default function ClaudeParticles() {
     }
 
     // ═══ 렌더링 ═══
-    let globalAlpha = 1;
+    function renderClump(clump: SandClump, t: number, now: number) {
+      for (const dot of clump.dots) {
+        const breath = Math.sin(t * dot.speed + dot.phase) * 0.5 + 0.5;
 
-    function renderDot(dot: SandDot, t: number, now: number) {
-      const breath = Math.sin(t * dot.speed + dot.phase) * 0.5 + 0.5;
+        let radius: number, alpha: number;
+        if (dot.isCore) {
+          radius = dot.radius * (0.85 + breath * 0.15);
+          alpha = 0.6 + breath * 0.2;
+        } else {
+          radius = dot.radius * 0.6 * (0.3 + breath * 0.7);
+          alpha = 0.2 + breath * 0.2;
+        }
+        radius = Math.min(radius, MAX_RADIUS);
 
-      let radius: number, alpha: number;
-      if (dot.isCore) {
-        radius = dot.radius * (0.85 + breath * 0.15);
-        alpha = 0.6 + breath * 0.2;
-      } else {
-        radius = dot.radius * 0.6 * (0.3 + breath * 0.7);
-        alpha = 0.2 + breath * 0.2;
-      }
-      radius = Math.min(radius, MAX_RADIUS);
+        // funneling squeeze
+        if (clump.state === "funneling") {
+          const neckDist = Math.abs(clump.y - cy) / (hgH * 0.1);
+          const neckProx = Math.max(0, 1 - neckDist);
+          radius *= 0.6 + 0.4 * (1 - neckProx);
+        }
 
-      // funneling squeeze
-      if (dot.state === "funneling") {
-        const neckDist = Math.abs(dot.y - cy) / (hgH * 0.1);
-        const neckProx = Math.max(0, 1 - neckDist);
-        radius *= 0.6 + 0.4 * (1 - neckProx);
-      }
+        // landed 착지 펄스
+        if (clump.state === "landed") {
+          const timeSinceLanding = now - clump.landedAt;
+          const landPulse = Math.max(0, 1 - timeSinceLanding / 1.0);
+          alpha += landPulse * 0.4;
+        }
 
-      // landed 착지 펄스
-      if (dot.state === "landed") {
-        const timeSinceLanding = now - dot.landedAt;
-        const landPulse = Math.max(0, 1 - timeSinceLanding / 1.0);
-        alpha += landPulse * 0.4;
-      }
+        alpha *= globalAlpha;
+        if (alpha < 0.01 || radius < 0.1) continue;
 
-      alpha *= globalAlpha;
-      if (alpha < 0.01 || radius < 0.1) return;
+        const dx = clump.x + dot.lx;
+        const dy = clump.y + dot.ly;
 
-      // falling stretch
-      if (dot.state === "falling") {
-        const stretchY = radius * (1 + Math.min(dot.vy * 0.05, 0.8));
-        ctx.beginPath();
-        ctx.ellipse(dot.x, dot.y, radius, stretchY, 0, 0, PI2);
-        ctx.fillStyle = `rgba(${DC}, ${alpha})`;
-        ctx.fill();
-      } else {
-        ctx.beginPath();
-        ctx.arc(dot.x, dot.y, radius, 0, PI2);
-        ctx.fillStyle = `rgba(${DC}, ${alpha})`;
-        ctx.fill();
-      }
-
-      // trail
-      if (dot.state === "funneling" || dot.state === "falling") {
-        for (let i = 0; i < dot.trail.length; i++) {
-          const tr = dot.trail[i];
-          const trailAlpha = 0.15 * (1 - i / dot.trail.length) * globalAlpha;
-          const trailR = radius * 0.6 * (1 - i / dot.trail.length);
-          if (trailAlpha < 0.01 || trailR < 0.1) continue;
+        // falling stretch
+        if (clump.state === "falling") {
+          const stretchY = radius * (1 + Math.min(clump.vy * 0.05, 0.8));
           ctx.beginPath();
-          ctx.arc(tr.x, tr.y, trailR, 0, PI2);
-          ctx.fillStyle = `rgba(${DC}, ${trailAlpha})`;
-          ctx.fill();
+          ctx.ellipse(dx, dy, radius, stretchY, 0, 0, PI2);
+        } else {
+          ctx.beginPath();
+          ctx.arc(dx, dy, radius, 0, PI2);
+        }
+        ctx.fillStyle = `rgba(${DC}, ${alpha})`;
+        ctx.fill();
+      }
+
+      // trail (덩어리 전체의 잔상)
+      if (clump.state === "funneling" || clump.state === "falling") {
+        for (let i = 0; i < clump.trail.length; i++) {
+          const tr = clump.trail[i];
+          const trailAlpha = 0.12 * (1 - i / clump.trail.length) * globalAlpha;
+          if (trailAlpha < 0.01) continue;
+          // trail은 core dot만 간략히
+          for (const dot of clump.dots) {
+            if (!dot.isCore) continue;
+            const trailR = dot.radius * 0.5 * (1 - i / clump.trail.length);
+            if (trailR < 0.1) continue;
+            ctx.beginPath();
+            ctx.arc(tr.x + dot.lx, tr.y + dot.ly, trailR, 0, PI2);
+            ctx.fillStyle = `rgba(${DC}, ${trailAlpha})`;
+            ctx.fill();
+          }
         }
       }
     }
@@ -454,7 +535,7 @@ export default function ClaudeParticles() {
       for (const ed of edgeDots) {
         const breath = Math.sin(t * ed.speed + ed.phase) * 0.5 + 0.5;
         const r = ed.baseR * (0.7 + breath * 0.3);
-        const a = 0.3 + breath * 0.15;
+        const a = (0.3 + breath * 0.15) * globalAlpha;
         if (a < 0.01) continue;
         ctx.beginPath();
         ctx.arc(ed.x, ed.y, r, 0, PI2);
@@ -466,7 +547,7 @@ export default function ClaudeParticles() {
     function drawAmbient(t: number) {
       for (const d of ambientDots) {
         const breath = Math.sin(t * d.speed + d.phase);
-        const a = d.alpha * (0.8 + breath * 0.2);
+        const a = d.alpha * (0.8 + breath * 0.2) * globalAlpha;
         if (a < 0.01) continue;
         ctx.beginPath();
         ctx.arc(d.x, d.y, d.r * (1 + breath * 0.2), 0, PI2);
@@ -475,26 +556,72 @@ export default function ClaudeParticles() {
       }
     }
 
-    // ═══ 메인 루프 ═══
+    // ═══ Step 6: 사이클 루프 + 메인 루프 ═══
     function draw(timestamp: number) {
       const now = timestamp / 1000;
+      const dt = lastTime ? now - lastTime : 1 / 60;
+      lastTime = now;
+
       ctx.clearRect(0, 0, w, h);
 
-      // 드레인 tick
-      drainCounter++;
-      if (drainCounter >= nextDrainAt) {
-        drainTick();
-        drainCounter = 0;
-        nextDrainAt = DRAIN_INTERVAL_MIN + Math.random() * (DRAIN_INTERVAL_MAX - DRAIN_INTERVAL_MIN);
-      }
+      if (cycleState === "running") {
+        drainCounter++;
+        if (drainCounter >= nextDrainAt) {
+          drainTick();
+          drainCounter = 0;
+          nextDrainAt = DRAIN_INTERVAL_MIN + Math.random() * (DRAIN_INTERVAL_MAX - DRAIN_INTERVAL_MIN);
+        }
+        updatePhysics(now);
 
-      updatePhysics(now);
+        const allLanded = clumps.length > 0 && clumps.every(c => c.state === "landed");
+        if (allLanded) {
+          cycleState = "paused";
+          cycleTimer = 0;
+        }
+      } else if (cycleState === "paused") {
+        cycleTimer += dt;
+        if (cycleTimer >= PAUSE_DURATION) {
+          cycleState = "fadeout";
+          cycleTimer = 0;
+        }
+      } else if (cycleState === "fadeout") {
+        cycleTimer += dt;
+        globalAlpha = Math.max(0, 1 - cycleTimer / FADE_DURATION);
+        if (globalAlpha <= 0) {
+          // 리셋
+          clumps.forEach(c => {
+            c.x = c.homeX;
+            c.y = c.homeY;
+            c.state = "resting";
+            c.vx = 0;
+            c.vy = 0;
+            c.trail = [];
+            c.landedAt = 0;
+          });
+          // gridMap 재구축
+          gridMap.clear();
+          for (const c of clumps) {
+            gridMap.set(gridKey(c.gridRow, c.gridCol), c);
+          }
+          landingSlots.forEach(s => s.taken = false);
+          drainCounter = 0;
+          cycleState = "fadein";
+          cycleTimer = 0;
+        }
+      } else if (cycleState === "fadein") {
+        cycleTimer += dt;
+        globalAlpha = Math.min(1, cycleTimer / FADE_DURATION);
+        if (globalAlpha >= 1) {
+          globalAlpha = 1;
+          cycleState = "running";
+        }
+      }
 
       drawBackground(now);
       drawEdge(now);
 
-      for (const dot of dots) {
-        renderDot(dot, now, now);
+      for (const c of clumps) {
+        renderClump(c, now, now);
       }
 
       drawAmbient(now);
@@ -515,9 +642,14 @@ export default function ClaudeParticles() {
       hgW = Math.min(w * 0.36, 460);
       hgH = h * 0.44;
 
-      buildDots();
+      buildClumps();
       buildEdgeDots();
       buildAmbient();
+
+      cycleState = "running";
+      globalAlpha = 1;
+      drainCounter = 0;
+      lastTime = 0;
     }
 
     resize();
