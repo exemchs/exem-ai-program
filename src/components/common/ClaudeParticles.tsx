@@ -706,10 +706,34 @@ export default function ClaudeParticles() {
       drawBackground(now);
       drawEdge(now);
 
+      // hourglass 상반부 clip — edge 밖 clump 안 보이게
+      ctx.save();
+      ctx.beginPath();
+      const clipSteps = 60;
+      // 왼쪽 edge (위→아래)
+      for (let i = 0; i <= clipSteps; i++) {
+        const ny = -1 + (i / clipSteps); // -1 to 0
+        const px = cx - hgProfile(ny) * hgW;
+        const py = cy + ny * hgH;
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      // 오른쪽 edge (아래→위)
+      for (let i = clipSteps; i >= 0; i--) {
+        const ny = -1 + (i / clipSteps);
+        const px = cx + hgProfile(ny) * hgW;
+        const py = cy + ny * hgH;
+        ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      ctx.clip();
+
       for (const c of clumps) {
         if (c.state === "fading" && c.fadeAlpha <= 0) continue;
         renderClump(c, now, now);
       }
+
+      ctx.restore();
 
       drawAmbient(now);
       animId = requestAnimationFrame(draw);
