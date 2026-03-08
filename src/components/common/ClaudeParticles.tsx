@@ -122,6 +122,8 @@ export default function ClaudeParticles() {
     let gridMap: Map<string, SandClump> = new Map();
     let drainCounter = 0;
     let nextDrainAt = DRAIN_INTERVAL_MIN + Math.random() * (DRAIN_INTERVAL_MAX - DRAIN_INTERVAL_MIN);
+    // 이미 빠진 격자 위치 추적 — V자 갭 판정에 사용
+    let drainedPositions: Set<string> = new Set();
     let cycleState: "running" | "paused" | "fadeout" | "fadein" = "running";
     let cycleTimer = 0;
     let globalAlpha = 1;
@@ -271,41 +273,40 @@ export default function ClaudeParticles() {
       return false;
     }
 
-    // V자 갭에 인접한 덩어리인지 판정
-    // "경사면 표면" = resting이면서, 아래/대각아래(중앙 방향)에 빈 칸이 있는 것
-    // 즉 이미 빠진 곳과 맞닿아 있는 덩어리만
-    function isOnVSurface(c: SandClump): boolean {
-      const below = gridKey(c.gridRow + 1, c.gridCol);
-      if (!gridMap.has(below)) {
-        // 아래가 비어있는데, 원래 그 자리에 덩어리가 있었어야 V갭 표면
-        // 모래시계 실루엣 내부인지 체크
-        const belowY = c.y + CLUMP_STEP;
-        const maxXBelow = hgMaxXAtY(belowY) * 0.85;
-        if (maxXBelow > CLUMP_SIZE && Math.abs(c.x - cx) < maxXBelow) {
-          return true;
-        }
-      }
-      // 대각 아래 중앙 방향이 비어있는지
-      const diagCol = c.x < cx ? c.gridCol + 1 : c.gridCol - 1;
-      const diagKey = gridKey(c.gridRow + 1, diagCol);
-      if (!gridMap.has(diagKey)) {
-        const belowY = c.y + CLUMP_STEP;
-        const maxXBelow = hgMaxXAtY(belowY) * 0.85;
-        const diagX = c.x + (c.x < cx ? CLUMP_STEP : -CLUMP_STEP);
-        if (maxXBelow > CLUMP_SIZE && Math.abs(diagX - cx) < maxXBelow) {
-          return true;
-        }
-      }
-      return false;
+    // V자 갭 "바로 옆" 판정:
+    // 이미 빠진 위치(drainedPositions)에 인접한 resting 덩어리만 표면
+    function isAdjacentToDrained(c: SandClump): boolean {
+      // 아래, 대각아래좌, 대각아래우, 좌, 우 — 빠진 곳에 닿아있는지
+      const neighbors = [
+        gridKey(c.gridRow + 1, c.gridCol),      // 아래
+        gridKey(c.gridRow + 1, c.gridCol - 1),  // 대각아래좌
+        gridKey(c.gridRow + 1, c.gridCol + 1),  // 대각아래우
+        gridKey(c.gridRow, c.gridCol - 1),       // 좌
+        gridKey(c.gridRow, c.gridCol + 1),       // 우
+      ];
+      return neighbors.some(key => drainedPositions.has(key));
     }
 
     // 좌/우 교대 플래그
     let nextSide: "left" | "right" = "left";
 
     function drainTick() {
-      // V자 갭 표면에 있는 resting 덩어리만 후보
+      // 초기 seed: drainedPositions가 비어있으면 목 바로 아래(하단 영역) 위치를 seed로
+      if (drainedPositions.size === 0) {
+        // 목 위치의 격자 row+1 ~ row+3 을 drained로 표시 (갭의 시작점)
+        // 가장 아래 행의 resting 덩어리를 찾아서 그 아래를 seed
+        const lowestRow = clumps
+          .filter(c => c.state === "resting")
+          .reduce((max, c) => Math.max(max, c.gridRow), 0);
+        // 목 아래 = lowestRow + 1
+        for (let col = -10; col <= 10; col++) {
+          drainedPositions.add(gridKey(lowestRow + 1, col));
+        }
+      }
+
+      // V자 갭 바로 옆 resting 덩어리만 후보
       const surfaceClumps = clumps.filter(c =>
-        c.state === "resting" && isOnVSurface(c)
+        c.state === "resting" && isAdjacentToDrained(c)
       );
 
       // 좌측: 중앙에 가장 가까운 표면 덩어리 (아래 행 우선)
@@ -355,7 +356,9 @@ export default function ClaudeParticles() {
           picked.state = "sliding";
         }
         assignLandingSlot(picked);
-        gridMap.delete(gridKey(picked.gridRow, picked.gridCol));
+        const key = gridKey(picked.gridRow, picked.gridCol);
+        gridMap.delete(key);
+        drainedPositions.add(key); // 빠진 위치 기록 → 옆 덩어리가 다음 표면이 됨
       }
     }
 
@@ -640,6 +643,7 @@ export default function ClaudeParticles() {
             gridMap.set(gridKey(c.gridRow, c.gridCol), c);
           }
           landingSlots.forEach(s => s.taken = false);
+          drainedPositions.clear();
           drainCounter = 0;
           cycleState = "fadein";
           cycleTimer = 0;
