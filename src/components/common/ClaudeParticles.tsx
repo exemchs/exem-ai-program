@@ -27,15 +27,15 @@ export default function ClaudeParticles() {
     const DOT_RADIUS_MAX = 3.0;
     const MAX_RADIUS = DOT_SPACING * 0.45;
 
-    const GRAVITY = 0.45;
-    const MAX_SLIDE_SPEED = 8.0;
-    const MAX_FUNNEL_SPEED = 10.0;
-    const MAX_FALL_SPEED = 14.0;
-    const FUNNEL_PULL = 0.14;
+    const GRAVITY = 0.8;
+    const MAX_SLIDE_SPEED = 14.0;
+    const MAX_FUNNEL_SPEED = 16.0;
+    const MAX_FALL_SPEED = 22.0;
+    const FUNNEL_PULL = 0.25;
     const NECK_THROUGHPUT = 1;
-    const ROW_DRAIN_TIME = 30; // 한 줄 빠지는 목표 프레임 (~0.5초)
-    const PAUSE_DURATION = 1.0;
-    const FADE_DURATION = 0.4;
+    const ROW_DRAIN_TIME = 12; // 한 줄 빠지는 목표 프레임 (~0.2초)
+    const PAUSE_DURATION = 0.8;
+    const FADE_DURATION = 0.3;
 
     // ═══ 모래시계 실루엣 ═══
     function hgProfile(ny: number): number {
@@ -376,8 +376,8 @@ export default function ClaudeParticles() {
 
           case "settling": {
             // 한 칸 아래로 중력 낙하 → 도착하면 resting
-            c.vy += GRAVITY;
-            c.vy = Math.min(c.vy, 8.0);
+            c.vy += GRAVITY * 1.2;
+            c.vy = Math.min(c.vy, 14.0);
             c.y += c.vy;
 
             if (c.y >= c.settleToY) {
@@ -403,9 +403,9 @@ export default function ClaudeParticles() {
             // 경사면에서 중앙으로 수평 이동
             const dxToTarget = c.targetX - c.x;
             const dir = Math.sign(dxToTarget);
-            c.vx += dir * 0.6;
-            c.vx *= 0.82;
-            c.vx = clamp(c.vx, -8.0, 8.0);
+            c.vx += dir * 1.2;
+            c.vx *= 0.78;
+            c.vx = clamp(c.vx, -14.0, 14.0);
             c.x += c.vx;
 
             // 도착 판정
