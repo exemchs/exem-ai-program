@@ -273,92 +273,115 @@ export default function ClaudeParticles() {
       return false;
     }
 
-    // V자 갭 "바로 옆" 판정:
-    // 이미 빠진 위치(drainedPositions)에 인접한 resting 덩어리만 표면
-    function isAdjacentToDrained(c: SandClump): boolean {
-      // 아래, 대각아래좌, 대각아래우, 좌, 우 — 빠진 곳에 닿아있는지
-      const neighbors = [
-        gridKey(c.gridRow + 1, c.gridCol),      // 아래
-        gridKey(c.gridRow + 1, c.gridCol - 1),  // 대각아래좌
-        gridKey(c.gridRow + 1, c.gridCol + 1),  // 대각아래우
-        gridKey(c.gridRow, c.gridCol - 1),       // 좌
-        gridKey(c.gridRow, c.gridCol + 1),       // 우
-      ];
-      return neighbors.some(key => drainedPositions.has(key));
+    // ═══ 행 단위 드레인 시스템 ═══
+    //
+    // 1) 현재 바닥행(currentDrainRow)에서 좌/우 교대로 1개씩 빠짐
+    // 2) 바닥행이 텅 비면 → 윗줄이 한 칸 내려옴 (settle)
+    //    - hourglass 안에 들어가는 것만 내려옴
+    //    - 안 들어가는 건 funneling으로 빠짐
+    // 3) 내려온 행이 새 바닥행 → 다시 1)
+
+    let nextSide: "left" | "right" = "left";
+    let currentDrainRow = -1; // 초기화 시 설정
+
+    function initDrain() {
+      // 가장 아래(gridRow가 큰) resting 행을 찾음
+      const resting = clumps.filter(c => c.state === "resting");
+      if (resting.length === 0) return;
+      currentDrainRow = resting.reduce((max, c) => Math.max(max, c.gridRow), 0);
+      nextSide = "left";
     }
 
-    // 좌/우 교대 플래그
-    let nextSide: "left" | "right" = "left";
+    function getRowClumps(row: number): SandClump[] {
+      return clumps.filter(c => c.state === "resting" && c.gridRow === row);
+    }
 
-    function drainTick() {
-      // 초기 seed: drainedPositions가 비어있으면 목 바로 아래(하단 영역) 위치를 seed로
-      if (drainedPositions.size === 0) {
-        // 목 위치의 격자 row+1 ~ row+3 을 drained로 표시 (갭의 시작점)
-        // 가장 아래 행의 resting 덩어리를 찾아서 그 아래를 seed
-        const lowestRow = clumps
-          .filter(c => c.state === "resting")
-          .reduce((max, c) => Math.max(max, c.gridRow), 0);
-        // 목 아래 = lowestRow + 1
-        for (let col = -10; col <= 10; col++) {
-          drainedPositions.add(gridKey(lowestRow + 1, col));
+    // 윗줄 한 칸 내려오기
+    function settleRowDown() {
+      const aboveRow = currentDrainRow - 1;
+      const aboveClumps = getRowClumps(aboveRow);
+      if (aboveClumps.length === 0) {
+        // 위에 아무것도 없으면 더 위를 찾음
+        const resting = clumps.filter(c => c.state === "resting");
+        if (resting.length === 0) return;
+        currentDrainRow = resting.reduce((max, c) => Math.max(max, c.gridRow), 0);
+        return;
+      }
+
+      const targetY = aboveClumps[0].y + CLUMP_STEP;
+      const maxXAtTarget = hgMaxXAtY(targetY) * 0.85;
+
+      for (const c of aboveClumps) {
+        const newX = c.x; // 같은 x 유지
+        // hourglass 안에 들어가는지 체크
+        if (maxXAtTarget > CLUMP_SIZE && Math.abs(newX - cx) <= maxXAtTarget) {
+          // 한 칸 아래로 내려옴 — sliding 상태로 부드럽게
+          gridMap.delete(gridKey(c.gridRow, c.gridCol));
+          c.gridRow = currentDrainRow;
+          c.y = c.homeY; // 아직 원래 위치 (sliding으로 이동)
+          c.state = "sliding";
+          // target: 한 줄 아래 위치
+          c.targetX = newX;
+          c.targetY = targetY;
+          assignLandingSlot(c);
+          gridMap.set(gridKey(c.gridRow, c.gridCol), c);
+        } else {
+          // hourglass 밖 → 빠져나감
+          gridMap.delete(gridKey(c.gridRow, c.gridCol));
+          c.state = "funneling";
+          assignLandingSlot(c);
         }
       }
 
-      // V자 갭 바로 옆 resting 덩어리만 후보
-      const surfaceClumps = clumps.filter(c =>
-        c.state === "resting" && isAdjacentToDrained(c)
-      );
+      // 위에서 내려왔으니 drain row 유지 (같은 row에서 다시 drain)
+      // aboveRow가 비었으므로 다음 settle 시 그 위를 찾음
+      currentDrainRow = aboveRow;
+      nextSide = "left";
+    }
 
-      // 좌측: 중앙에 가장 가까운 표면 덩어리 (아래 행 우선)
-      const leftCandidates = surfaceClumps
-        .filter(c => c.x < cx - CLUMP_STEP * 0.3)
-        .sort((a, b) => {
-          if (Math.abs(a.y - b.y) > CLUMP_STEP * 0.5) return b.y - a.y;
-          return b.x - a.x; // 중앙에 가까운 것
-        });
+    function drainTick() {
+      if (currentDrainRow < 0) initDrain();
 
-      // 우측
-      const rightCandidates = surfaceClumps
-        .filter(c => c.x > cx + CLUMP_STEP * 0.3)
-        .sort((a, b) => {
-          if (Math.abs(a.y - b.y) > CLUMP_STEP * 0.5) return b.y - a.y;
-          return a.x - b.x;
-        });
+      // 현재 바닥행의 resting 덩어리
+      const rowClumps = getRowClumps(currentDrainRow);
 
-      // 중앙 (목 바로 위)
-      const centerCandidates = surfaceClumps
-        .filter(c => Math.abs(c.x - cx) <= CLUMP_STEP * 0.3)
-        .sort((a, b) => b.y - a.y);
+      if (rowClumps.length === 0) {
+        // 바닥행이 비었으면 윗줄 settle
+        settleRowDown();
+        return;
+      }
+
+      // 행 내에서 좌/우 교대, 중앙에 가까운 것부터
+      const leftClumps = rowClumps
+        .filter(c => c.x < cx)
+        .sort((a, b) => b.x - a.x); // 중앙에 가까운 것 먼저
+
+      const rightClumps = rowClumps
+        .filter(c => c.x >= cx)
+        .sort((a, b) => a.x - b.x); // 중앙에 가까운 것 먼저
 
       let picked: SandClump | null = null;
 
-      // 좌/우 교대로 1개씩
-      if (nextSide === "left" && leftCandidates.length > 0) {
-        picked = leftCandidates[0];
+      if (nextSide === "left" && leftClumps.length > 0) {
+        picked = leftClumps[0];
         nextSide = "right";
-      } else if (nextSide === "right" && rightCandidates.length > 0) {
-        picked = rightCandidates[0];
+      } else if (nextSide === "right" && rightClumps.length > 0) {
+        picked = rightClumps[0];
         nextSide = "left";
-      } else if (leftCandidates.length > 0) {
-        picked = leftCandidates[0];
+      } else if (leftClumps.length > 0) {
+        picked = leftClumps[0];
         nextSide = "right";
-      } else if (rightCandidates.length > 0) {
-        picked = rightCandidates[0];
+      } else if (rightClumps.length > 0) {
+        picked = rightClumps[0];
         nextSide = "left";
-      } else if (centerCandidates.length > 0) {
-        picked = centerCandidates[0];
       }
 
       if (picked) {
-        if (isNearNeck(picked.y)) {
-          picked.state = "funneling";
-        } else {
-          picked.state = "sliding";
-        }
+        picked.state = "sliding";
         assignLandingSlot(picked);
         const key = gridKey(picked.gridRow, picked.gridCol);
         gridMap.delete(key);
-        drainedPositions.add(key); // 빠진 위치 기록 → 옆 덩어리가 다음 표면이 됨
+        drainedPositions.add(key);
       }
     }
 
@@ -375,15 +398,13 @@ export default function ClaudeParticles() {
             break;
 
           case "sliding": {
-            // 경사면을 따라 아래+중앙 방향으로 미끄러짐
+            // 아래+중앙 방향으로 미끄러짐
             c.vy += GRAVITY * 0.5;
             c.vy = Math.min(c.vy, MAX_SLIDE_SPEED);
 
-            // 중앙 방향으로 약한 끌림 (경사면 기울기)
             const dxToCenter = cx - c.x;
-            const pullStrength = 0.02 + Math.abs(dxToCenter) * 0.00005;
-            c.vx += dxToCenter * pullStrength;
-            c.vx *= 0.94;
+            c.vx += dxToCenter * FUNNEL_PULL * 0.5;
+            c.vx *= 0.92;
 
             c.x += c.vx;
             c.y += c.vy;
@@ -644,6 +665,7 @@ export default function ClaudeParticles() {
           }
           landingSlots.forEach(s => s.taken = false);
           drainedPositions.clear();
+          currentDrainRow = -1;
           drainCounter = 0;
           cycleState = "fadein";
           cycleTimer = 0;
