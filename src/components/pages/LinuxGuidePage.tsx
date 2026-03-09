@@ -705,22 +705,6 @@ export default function LinuxGuidePage() {
             </p>
           </div>
 
-          {/* Feedback CTA */}
-          <div className="mt-6 p-6 rounded-2xl bg-gradient-to-r from-[#3B82F6]/10 to-[#d0f100]/10 border border-white/10 text-center">
-            <p className="text-white text-sm mb-2">
-              실무에서 이런 활용 사례가 있다면 알려주세요
-            </p>
-            <p className="text-white/50 text-xs mb-4">
-              엔지니어 분들의 실제 경험과 의견이 가이드 개선에 큰 도움이 됩니다.
-            </p>
-            <a
-              href="mailto:chs@ex-em.com?subject=[Claude Code 활용 사례] 의견 제출&body=이름:%0A소속/직무:%0A%0A활용 사례 또는 의견:%0A"
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-white text-[#1a2234] text-sm font-normal hover:bg-white/90 transition-colors no-underline"
-            >
-              <FileText size={14} />
-              의견 보내기
-            </a>
-          </div>
         </div>
       </section>
 
