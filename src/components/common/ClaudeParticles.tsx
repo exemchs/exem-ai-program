@@ -801,8 +801,10 @@ export default function ClaudeParticles() {
       cx = w / 2;
       cy = h * 0.46;
       // 비율 고정: 화면 크기에 관계없이 일정한 비율 유지
-      // 기준 해상도(1440×900)에서의 비율을 모든 화면에 적용
-      const refScale = Math.min(w / 1440, h / 900);
+      // 모바일에서는 화면 너비 기준으로 더 크게 표시
+      const refScale = w < 768
+        ? Math.min(w / 640, h / 900)
+        : Math.min(w / 1440, h / 900);
       hgW = 380 * refScale;
       hgH = 380 * refScale;
 
