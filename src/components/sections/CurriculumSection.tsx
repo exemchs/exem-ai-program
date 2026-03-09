@@ -176,6 +176,21 @@ const days: {
   },
 ];
 
+const faqItems = [
+  {
+    q: "이 프로그램은 왜 만들었나요?",
+    a: "Claude Code가 어렵게만 느껴지는 엑셈 구성원(비전공자) 대상으로 난이도를 낮춰 구성했습니다.",
+  },
+  {
+    q: "커리큘럼은 어떻게 만들어졌나요?",
+    a: "Claude Code 교육 오픈소스를 참조하여 EXEM 업무 환경에 맞게 재구성했습니다.",
+  },
+  {
+    q: "오류를 발견하면?",
+    a: "조현서 그룹장에게 보고해 주세요.",
+  },
+];
+
 const references = [
   {
     title: "Anthropic 해커톤 우승자가 공유한 Claude Code 실전 팁 70가지",
@@ -254,7 +269,8 @@ export default function CurriculumSection() {
   const [visibleLines, setVisibleLines] = useState(0);
   const [hasEnteredView, setHasEnteredView] = useState(false);
   const [showGuide, setShowGuide] = useState(false);
-  const [guideTab, setGuideTab] = useState<"beginner" | "tips">("beginner");
+  const [guideTab, setGuideTab] = useState<"beginner" | "tips" | "faq">("beginner");
+  const [faqOpenIdx, setFaqOpenIdx] = useState<number | null>(null);
   const terminalRef = useRef<HTMLDivElement>(null);
 
   const current = days[activeDay];
@@ -439,6 +455,12 @@ export default function CurriculumSection() {
                     >
                       추가 팁
                     </button>
+                    <button
+                      onClick={() => setGuideTab("faq")}
+                      className={`px-5 py-2 rounded-md text-sm transition-all ${guideTab === "faq" ? "bg-white/15 text-white shadow-sm" : "text-white/40 hover:text-white/70"}`}
+                    >
+                      FAQ
+                    </button>
                   </div>
                 </div>
 
@@ -478,7 +500,7 @@ export default function CurriculumSection() {
                       <p className="text-white/80 text-sm">터미널을 열고 <code className="text-[#d0f100] bg-white/10 px-1.5 py-0.5 rounded text-xs">claude</code> 입력 후, <code className="text-[#d0f100] bg-white/10 px-1.5 py-0.5 rounded text-xs">안녕</code> 또는 <code className="text-[#d0f100] bg-white/10 px-1.5 py-0.5 rounded text-xs">/day0</code> 입력하면 시작!</p>
                     </div>
                   </div>
-                ) : (
+                ) : guideTab === "tips" ? (
                   <div className="space-y-3">
                     {references.map((ref, i) => (
                       <a
@@ -492,17 +514,35 @@ export default function CurriculumSection() {
                           <p className="text-white/80 text-sm font-normal">{ref.title}</p>
                           <ExternalLink size={14} className="text-white/30 shrink-0 mt-0.5" />
                         </div>
-                        <div className="flex items-center gap-3">
-                          <span className="text-white/30 text-xs">{ref.source}</span>
-                          <div className="flex gap-1.5">
-                            {ref.tags.map((tag) => (
-                              <span key={tag} className="px-2 py-0.5 rounded-full bg-white/5 text-white/30 text-xs">
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <span className="text-white/30 text-xs mr-1">{ref.source}</span>
+                          {ref.tags.map((tag) => (
+                            <span key={tag} className="px-2 py-0.5 rounded-full bg-white/5 text-white/30 text-xs whitespace-nowrap">
+                              {tag}
+                            </span>
+                          ))}
                         </div>
                       </a>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {faqItems.map((item, i) => (
+                      <div
+                        key={i}
+                        onClick={() => setFaqOpenIdx(faqOpenIdx === i ? null : i)}
+                        className={`p-4 rounded-xl transition-colors cursor-pointer ${faqOpenIdx === i ? "bg-white/10 border border-white/20" : "bg-white/5 border border-white/10"}`}
+                      >
+                        <div className="text-sm font-normal text-white/80 flex justify-between items-center">
+                          {item.q}
+                          <span className={`text-[#d0f100] transition-transform duration-300 text-xl leading-none ml-3 shrink-0 ${faqOpenIdx === i ? "rotate-45" : ""}`}>
+                            +
+                          </span>
+                        </div>
+                        {faqOpenIdx === i && (
+                          <p className="mt-3 text-white/50 text-sm leading-relaxed">{item.a}</p>
+                        )}
+                      </div>
                     ))}
                   </div>
                 )}

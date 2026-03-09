@@ -5,7 +5,6 @@ import WhyNowSection from "./components/sections/WhyNowSection";
 import WhatWeLearnSection from "./components/sections/WhatWeLearnSection";
 import PrerequisitesSection from "./components/sections/PrerequisitesSection";
 import CurriculumSection from "./components/sections/CurriculumSection";
-import FAQSection from "./components/sections/FAQSection";
 
 export default function App() {
   const [os, setOs] = useState<OsType>(() => {
@@ -26,7 +25,7 @@ export default function App() {
       <WhatWeLearnSection />
       <PrerequisitesSection os={os} onOsChange={setOs} />
       <CurriculumSection />
-      <FAQSection />
+
 
       {showNotice && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowNotice(false)}>
