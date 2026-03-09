@@ -80,11 +80,11 @@ export default function WhatWeLearnSection() {
                   claude-code
                 </div>
               </div>
-              <div className="relative flex-grow">
+              <div className="grid flex-grow" style={{ gridTemplateArea: "'stack'" }}>
                 {terminalContent.map((content, idx) => (
                   <div
                     key={idx}
-                    className={`p-6 font-mono text-sm ${idx === activeTab ? "relative" : "absolute inset-0 invisible"}`}
+                    className={`p-6 font-mono text-sm col-start-1 row-start-1 ${idx === activeTab ? "" : "invisible"}`}
                   >
                     <div className="flex gap-4 mb-4">
                       <span className="text-[#d0f100]">❯</span>
