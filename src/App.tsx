@@ -5,8 +5,20 @@ import WhyNowSection from "./components/sections/WhyNowSection";
 import WhatWeLearnSection from "./components/sections/WhatWeLearnSection";
 import PrerequisitesSection from "./components/sections/PrerequisitesSection";
 import CurriculumSection from "./components/sections/CurriculumSection";
+import LinuxGuidePage from "./components/pages/LinuxGuidePage";
+
+function useHashRoute() {
+  const [hash, setHash] = useState(window.location.hash);
+  useEffect(() => {
+    const onHashChange = () => setHash(window.location.hash);
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
+  return hash;
+}
 
 export default function App() {
+  const hash = useHashRoute();
   const [os, setOs] = useState<OsType>(() => {
     const p = navigator.platform.toLowerCase();
     return p.includes("win") ? "win" : "mac";
@@ -14,9 +26,16 @@ export default function App() {
   const [showNotice, setShowNotice] = useState(false);
 
   useEffect(() => {
+    if (hash === "#/linux-guide") return;
+    if (showNotice) return;
     const timer = setTimeout(() => setShowNotice(true), 800);
     return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  if (hash === "#/linux-guide") {
+    return <LinuxGuidePage />;
+  }
 
   return (
     <div className="min-h-screen bg-[#F8F9FC] text-[#1a2234] font-sans selection:bg-blue-200/50">
@@ -24,8 +43,7 @@ export default function App() {
       <WhyNowSection />
       <WhatWeLearnSection />
       <PrerequisitesSection os={os} onOsChange={setOs} />
-      <CurriculumSection />
-
+      {os !== "linux" && <CurriculumSection />}
 
       {showNotice && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowNotice(false)}>
@@ -38,7 +56,9 @@ export default function App() {
               AI 활용 중급자 이상은 Anthropic 공식 프로그램 <a href="https://anthropic.skilljar.com/" target="_blank" rel="noreferrer" className="text-blue-500 hover:text-blue-600 underline">Skilljar</a>를 추천합니다.
             </p>
             <div className="border-t border-gray-100 pt-4 mb-8">
-              <p className="text-[#9CA3AF] text-xs">추후 업데이트 예정 — Linux / WSL 환경 지원</p>
+              <p className="text-[#9CA3AF] text-xs">
+                엔지니어를 위한 <a href="#/linux-guide" className="text-blue-500 hover:text-blue-600 underline">Linux / WSL 설치 가이드</a>가 추가되었습니다 <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-600">Beta</span>
+              </p>
             </div>
             <button
               onClick={() => setShowNotice(false)}

@@ -128,7 +128,7 @@ export default function PrerequisitesSection({
     setCopiedIdx(key);
     setTimeout(() => setCopiedIdx(null), 2000);
   };
-  const cards = [
+  const cardsDefault = [
     {
       title: "Cursor",
       icon: <Terminal size={20} />,
@@ -173,7 +173,28 @@ export default function PrerequisitesSection({
     },
   ];
 
-  const steps = [
+  const cardsLinux = [
+    {
+      title: "터미널",
+      icon: <Terminal size={20} />,
+      desc: "Bash 또는 Zsh 쉘이 필요합니다.",
+      link: "#",
+      linkText: "기본 내장",
+      linkIcon: <CheckCircle2 size={14} />,
+    },
+    {
+      title: "Claude 계정",
+      icon: <Key size={20} />,
+      desc: "Pro($20/월) 이상 구독이 필요합니다.",
+      link: "https://claude.ai",
+      linkText: "유료 결제",
+      linkIcon: <ExternalLink size={14} />,
+    },
+  ];
+
+  const cards = os === "linux" ? cardsLinux : cardsDefault;
+
+  const stepsDefault = [
     {
       title: "Cursor 열기 및 로그인",
       desc: "Cursor를 열고 로그인을 진행하세요.",
@@ -223,6 +244,54 @@ export default function PrerequisitesSection({
     },
   ];
 
+  const stepsLinux = [
+    {
+      title: "터미널 열기",
+      desc: "Bash 또는 Zsh 터미널을 엽니다.",
+      code: null,
+      tip: "Ubuntu, Debian, Alpine 3.19+ / RAM 4GB 이상 필요",
+      image: null,
+    },
+    {
+      title: "Claude Code 설치",
+      desc: "네이티브 인스톨러 한 줄로 설치합니다. Node.js가 필요 없습니다.",
+      code: "curl -fsSL https://claude.ai/install.sh | bash",
+      tip: "설치 경로: ~/.local/bin/claude / 자동 업데이트 내장",
+      image: null,
+    },
+    {
+      title: "PATH 설정 (필요 시)",
+      desc: "command not found 에러가 뜨면 PATH를 추가하세요.",
+      codes: [
+        { label: "Bash", code: 'echo \'export PATH="$HOME/.local/bin:$PATH"\' >> ~/.bashrc && source ~/.bashrc', tip: "Bash 사용자 (Linux 기본)" },
+        { label: "Zsh", code: 'echo \'export PATH="$HOME/.local/bin:$PATH"\' >> ~/.zshrc && source ~/.zshrc', tip: "Zsh 사용자" },
+      ],
+      code: null,
+      tip: null,
+      image: null,
+    },
+    {
+      title: "설치 확인",
+      desc: "버전 확인과 진단 명령으로 설치를 검증합니다.",
+      codes: [
+        { label: "버전", code: "claude --version", tip: "버전 번호가 출력되면 성공" },
+        { label: "진단", code: "claude doctor", tip: "All checks passed! 가 뜨면 완료" },
+      ],
+      code: null,
+      tip: null,
+      image: null,
+    },
+    {
+      title: "Claude 로그인",
+      desc: "claude를 입력하면 브라우저가 열리며 로그인 화면이 나타납니다.",
+      code: "claude",
+      tip: "Pro 이상 계정으로 로그인 후, 터미널로 돌아오면 준비 완료!",
+      image: null,
+    },
+  ];
+
+  const steps = os === "linux" ? stepsLinux : stepsDefault;
+
   return (
     <>
     <section id="prerequisites" className="py-16 md:py-28 relative">
@@ -231,7 +300,7 @@ export default function PrerequisitesSection({
           사전 세팅,
           <br />
           <span className="text-[#9CA3AF] text-3xl md:text-4xl mt-2 block font-normal">
-            4가지만 준비하면 됩니다
+            {os === "linux" ? "2가지만 준비하면 됩니다" : "4가지만 준비하면 됩니다"}
           </span>
         </SectionHeading>
 
@@ -249,18 +318,36 @@ export default function PrerequisitesSection({
               >
                 <img src="/imgs/windows-logo.png" alt="Windows" className="w-4 h-4 object-contain" style={os === "win" ? { filter: "brightness(0) invert(1)" } : { filter: "brightness(0)" }} /> Windows
               </button>
+              <button
+                onClick={() => onOsChange("linux")}
+                className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-normal transition-all ${os === "linux" ? "bg-[#1a2234] text-white shadow-sm" : "text-[#6B7280] hover:text-[#1a2234]"}`}
+              >
+                <img src="/imgs/linux-logo.svg" alt="Linux" className="w-4 h-4 object-contain" style={os === "linux" ? { filter: "brightness(0) invert(1)" } : { filter: "brightness(0)" }} /> Linux / WSL
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-normal ${os === "linux" ? "bg-white/20 text-white/80" : "bg-amber-100 text-amber-600"}`}>Beta</span>
+              </button>
             </div>
           </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {cards.map((item, i) => (
+        {os === "linux" && (
+          <div className="flex justify-center mb-8 -mt-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-sm">
+              <AlertCircle size={14} />
+              설치 가이드만 제공됩니다. 교육 프로그램은 현재 준비 중입니다.
+            </div>
+          </div>
+        )}
+
+        <div className={`grid gap-6 ${os === "linux" ? "md:grid-cols-2 max-w-xl mx-auto" : "md:grid-cols-2 lg:grid-cols-4"}`}>
+          {cards.map((item, i) => {
+            const isInert = item.link === "#";
+            return (
             <a
               key={i}
-              href={item.link}
-              target="_blank"
-              rel="noreferrer"
-              onClick={item.showPopup ? (e) => { e.preventDefault(); setPopupData({ link: item.link, guide: item.guide![os] }); } : undefined}
-              className="p-6 rounded-2xl bg-white border border-[#E2E5EB] flex flex-col h-full hover:-translate-y-2 hover:shadow-lg hover:border-[#3B82F6]/30 transition-all duration-300 group cursor-pointer no-underline"
+              href={isInert ? undefined : item.link}
+              target={isInert ? undefined : "_blank"}
+              rel={isInert ? undefined : "noreferrer"}
+              onClick={isInert ? (e) => e.preventDefault() : "showPopup" in item && item.showPopup ? (e) => { e.preventDefault(); setPopupData({ link: item.link, guide: (item as any).guide[os] }); } : undefined}
+              className={`p-6 rounded-2xl bg-white border border-[#E2E5EB] flex flex-col h-full transition-all duration-300 group no-underline ${isInert ? "cursor-default" : "cursor-pointer hover:-translate-y-2 hover:shadow-lg hover:border-[#3B82F6]/30"}`}
             >
               <div className="flex items-center gap-3 mb-4">
                 <span className="text-[#3B82F6] relative w-6 h-6 flex-shrink-0">
@@ -276,7 +363,8 @@ export default function PrerequisitesSection({
                 {item.linkText} {item.linkIcon}
               </span>
             </a>
-          ))}
+          );
+          })}
         </div>
       </div>
 
@@ -296,7 +384,7 @@ export default function PrerequisitesSection({
             클로드 코드,
             <br />
             <span className="text-[#9CA3AF] text-3xl md:text-4xl mt-2 block font-normal">
-              5분이면 준비 끝
+              {os === "linux" ? "3분이면 준비 끝" : "5분이면 준비 끝"}
             </span>
           </SectionHeading>
 
@@ -313,6 +401,13 @@ export default function PrerequisitesSection({
                 className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-normal transition-all ${os === "win" ? "bg-[#1a2234] text-white shadow-sm" : "text-[#6B7280] hover:text-[#1a2234]"}`}
               >
                 <img src="/imgs/windows-logo.png" alt="Windows" className="w-4 h-4 object-contain" style={os === "win" ? { filter: "brightness(0) invert(1)" } : { filter: "brightness(0)" }} /> Windows
+              </button>
+              <button
+                onClick={() => onOsChange("linux")}
+                className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-normal transition-all ${os === "linux" ? "bg-[#1a2234] text-white shadow-sm" : "text-[#6B7280] hover:text-[#1a2234]"}`}
+              >
+                <img src="/imgs/linux-logo.svg" alt="Linux" className="w-4 h-4 object-contain" style={os === "linux" ? { filter: "brightness(0) invert(1)" } : { filter: "brightness(0)" }} /> Linux / WSL
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-normal ${os === "linux" ? "bg-white/20 text-white/80" : "bg-amber-100 text-amber-600"}`}>Beta</span>
               </button>
             </div>
           </div>
@@ -462,11 +557,26 @@ export default function PrerequisitesSection({
           </div>
 
           <div className="mt-12 text-center">
-            <p className="text-xl font-normal text-[#1a2234]">
-              설치 과정이 어렵다면,
-              <br />
-              Claude에 질문을 던져보세요.
-            </p>
+            {os === "linux" ? (
+              <>
+                <a
+                  href="#/linux-guide"
+                  className="inline-flex items-center gap-2 px-8 py-3.5 rounded-2xl bg-[#1a2234] text-white text-sm font-normal hover:bg-[#2a3344] transition-colors no-underline"
+                >
+                  <ExternalLink size={16} />
+                  Linux / WSL 상세 가이드 보기
+                </a>
+                <p className="text-[#9CA3AF] text-sm mt-4">
+                  트러블슈팅, WSL 설정, 엔지니어 활용 사례 등
+                </p>
+              </>
+            ) : (
+              <p className="text-xl font-normal text-[#1a2234]">
+                설치 과정이 어렵다면,
+                <br />
+                Claude에 질문을 던져보세요.
+              </p>
+            )}
           </div>
         </div>
       </div>
