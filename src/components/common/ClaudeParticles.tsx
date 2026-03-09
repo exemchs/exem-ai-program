@@ -786,7 +786,7 @@ export default function ClaudeParticles() {
       ctx.restore();
 
       drawAmbient(now);
-      animId = requestAnimationFrame(draw);
+      if (isVisible) animId = requestAnimationFrame(draw);
     }
 
     function resize() {
@@ -817,10 +817,31 @@ export default function ClaudeParticles() {
     }
 
     resize();
+    let isVisible = true;
     animId = requestAnimationFrame(draw);
+
+    // 화면 밖으로 나가면 RAF 중지 → CPU/GPU 절약
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          if (!isVisible) {
+            isVisible = true;
+            lastTime = 0; // 시간 점프 방지
+            animId = requestAnimationFrame(draw);
+          }
+        } else {
+          isVisible = false;
+          cancelAnimationFrame(animId);
+        }
+      },
+      { threshold: 0 }
+    );
+    observer.observe(canvas);
+
     window.addEventListener("resize", resize);
     return () => {
       cancelAnimationFrame(animId);
+      observer.disconnect();
       window.removeEventListener("resize", resize);
     };
   }, []);
