@@ -46,7 +46,7 @@ export default function HeroSection() {
       {/* Bottom CTA button */}
       <div className="absolute bottom-[12%] left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-4">
         <a
-          href="#why-now"
+          href="#prerequisites"
           className="inline-flex items-center gap-2 px-10 py-3 rounded-full bg-[#d0f100] text-[#100d0a] font-normal text-base hover:bg-[#e8ff6b] transition-colors shadow-[0_0_40px_rgba(208,241,0,0.3)] pointer-events-auto"
         >
           Start Now
