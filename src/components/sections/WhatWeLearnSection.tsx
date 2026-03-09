@@ -71,7 +71,7 @@ export default function WhatWeLearnSection() {
 
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-tr from-[#3B82F6]/10 to-transparent blur-3xl rounded-full"></div>
-            <div className="relative rounded-2xl border border-[#E2E5EB] bg-[#1a1a2e] overflow-hidden shadow-2xl min-h-[320px] md:min-h-[400px] flex flex-col terminal-window">
+            <div className="relative rounded-2xl border border-[#E2E5EB] bg-[#1a1a2e] overflow-hidden shadow-2xl flex flex-col terminal-window">
               <div className="h-10 border-b border-white/10 bg-white/5 flex items-center px-4 gap-2 shrink-0">
                 <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
                 <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
@@ -80,56 +80,79 @@ export default function WhatWeLearnSection() {
                   claude-code
                 </div>
               </div>
-              <div className="p-6 font-mono text-sm flex-grow">
-                <div className="flex gap-4 mb-4">
-                  <span className="text-[#d0f100]">❯</span>
-                  <span className="text-white">claude</span>
-                </div>
-                <div className="text-white/55 mb-6">
-                  Welcome to Claude Code! I can help you write code, analyze
-                  data, and automate tasks.
-                </div>
-                <div className="flex gap-4 mb-6">
-                  <span className="text-blue-400 shrink-0">You:</span>
-                  <span className="text-white/70">
-                    <Typewriter
-                      key={`user-${activeTab}`}
-                      text={terminalContent[activeTab].user}
-                      delay={30}
-                      startDelay={100}
-                    />
-                  </span>
-                </div>
-                <div className="flex gap-4">
-                  <span className="text-[#d0f100] shrink-0">Claude:</span>
-                  <div className="text-white/70 space-y-2">
-                    <p>
-                      <Typewriter
-                        key={`claude-1-${activeTab}`}
-                        text={terminalContent[activeTab].claude[0]}
-                        delay={20}
-                        startDelay={1500}
-                      />
-                    </p>
-                    <p className="text-white/40 italic">
-                      <Typewriter
-                        key={`claude-2-${activeTab}`}
-                        text={terminalContent[activeTab].claude[1]}
-                        delay={20}
-                        startDelay={2500}
-                      />
-                    </p>
-                    <p>
-                      <Typewriter
-                        key={`claude-3-${activeTab}`}
-                        text={terminalContent[activeTab].claude[2]}
-                        delay={20}
-                        startDelay={3500}
-                        onComplete={handleComplete}
-                      />
-                    </p>
+              <div className="relative flex-grow">
+                {terminalContent.map((content, idx) => (
+                  <div
+                    key={idx}
+                    className={`p-6 font-mono text-sm ${idx === activeTab ? "relative" : "absolute inset-0 invisible"}`}
+                  >
+                    <div className="flex gap-4 mb-4">
+                      <span className="text-[#d0f100]">❯</span>
+                      <span className="text-white">claude</span>
+                    </div>
+                    <div className="text-white/55 mb-6">
+                      Welcome to Claude Code! I can help you write code, analyze
+                      data, and automate tasks.
+                    </div>
+                    <div className="flex gap-4 mb-6">
+                      <span className="text-blue-400 shrink-0">You:</span>
+                      <span className="text-white/70">
+                        {idx === activeTab ? (
+                          <Typewriter
+                            key={`user-${activeTab}`}
+                            text={content.user}
+                            delay={30}
+                            startDelay={100}
+                          />
+                        ) : (
+                          content.user
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex gap-4">
+                      <span className="text-[#d0f100] shrink-0">Claude:</span>
+                      <div className="text-white/70 space-y-2">
+                        <p>
+                          {idx === activeTab ? (
+                            <Typewriter
+                              key={`claude-1-${activeTab}`}
+                              text={content.claude[0]}
+                              delay={20}
+                              startDelay={1500}
+                            />
+                          ) : (
+                            content.claude[0]
+                          )}
+                        </p>
+                        <p className="text-white/40 italic">
+                          {idx === activeTab ? (
+                            <Typewriter
+                              key={`claude-2-${activeTab}`}
+                              text={content.claude[1]}
+                              delay={20}
+                              startDelay={2500}
+                            />
+                          ) : (
+                            content.claude[1]
+                          )}
+                        </p>
+                        <p>
+                          {idx === activeTab ? (
+                            <Typewriter
+                              key={`claude-3-${activeTab}`}
+                              text={content.claude[2]}
+                              delay={20}
+                              startDelay={3500}
+                              onComplete={handleComplete}
+                            />
+                          ) : (
+                            content.claude[2]
+                          )}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                ))}
               </div>
             </div>
           </div>
