@@ -96,58 +96,70 @@ export default function WhatWeLearnSection() {
                     </div>
                     <div className="flex gap-4 mb-6">
                       <span className="text-blue-400 shrink-0">You:</span>
-                      <span className="text-white/70">
-                        {idx === activeTab ? (
-                          <Typewriter
-                            key={`user-${activeTab}`}
-                            text={content.user}
-                            delay={30}
-                            startDelay={100}
-                          />
-                        ) : (
-                          content.user
-                        )}
+                      <span className="text-white/70 relative">
+                        <span className="invisible">{content.user}</span>
+                        <span className="absolute inset-0">
+                          {idx === activeTab ? (
+                            <Typewriter
+                              key={`user-${activeTab}`}
+                              text={content.user}
+                              delay={30}
+                              startDelay={100}
+                            />
+                          ) : (
+                            content.user
+                          )}
+                        </span>
                       </span>
                     </div>
                     <div className="flex gap-4">
                       <span className="text-[#d0f100] shrink-0">Claude:</span>
                       <div className="text-white/70 space-y-2">
-                        <p>
-                          {idx === activeTab ? (
-                            <Typewriter
-                              key={`claude-1-${activeTab}`}
-                              text={content.claude[0]}
-                              delay={20}
-                              startDelay={1500}
-                            />
-                          ) : (
-                            content.claude[0]
-                          )}
+                        <p className="relative">
+                          <span className="invisible">{content.claude[0]}</span>
+                          <span className="absolute inset-0">
+                            {idx === activeTab ? (
+                              <Typewriter
+                                key={`claude-1-${activeTab}`}
+                                text={content.claude[0]}
+                                delay={20}
+                                startDelay={1500}
+                              />
+                            ) : (
+                              content.claude[0]
+                            )}
+                          </span>
                         </p>
-                        <p className="text-white/40 italic">
-                          {idx === activeTab ? (
-                            <Typewriter
-                              key={`claude-2-${activeTab}`}
-                              text={content.claude[1]}
-                              delay={20}
-                              startDelay={2500}
-                            />
-                          ) : (
-                            content.claude[1]
-                          )}
+                        <p className="text-white/40 italic relative">
+                          <span className="invisible">{content.claude[1]}</span>
+                          <span className="absolute inset-0">
+                            {idx === activeTab ? (
+                              <Typewriter
+                                key={`claude-2-${activeTab}`}
+                                text={content.claude[1]}
+                                delay={20}
+                                startDelay={2500}
+                              />
+                            ) : (
+                              content.claude[1]
+                            )}
+                          </span>
                         </p>
-                        <p>
-                          {idx === activeTab ? (
-                            <Typewriter
-                              key={`claude-3-${activeTab}`}
-                              text={content.claude[2]}
-                              delay={20}
-                              startDelay={3500}
-                              onComplete={handleComplete}
-                            />
-                          ) : (
-                            content.claude[2]
-                          )}
+                        <p className="relative">
+                          <span className="invisible">{content.claude[2]}</span>
+                          <span className="absolute inset-0">
+                            {idx === activeTab ? (
+                              <Typewriter
+                                key={`claude-3-${activeTab}`}
+                                text={content.claude[2]}
+                                delay={20}
+                                startDelay={3500}
+                                onComplete={handleComplete}
+                              />
+                            ) : (
+                              content.claude[2]
+                            )}
+                          </span>
                         </p>
                       </div>
                     </div>
