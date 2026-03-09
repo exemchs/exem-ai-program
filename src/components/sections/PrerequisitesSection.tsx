@@ -465,7 +465,7 @@ export default function PrerequisitesSection({
             <p className="text-xl font-normal text-[#1a2234]">
               설치 과정이 어렵다면,
               <br />
-              Claude(웹)에 질문을 던져보세요.
+              Claude에 질문을 던져보세요.
             </p>
           </div>
         </div>

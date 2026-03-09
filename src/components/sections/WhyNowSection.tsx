@@ -25,9 +25,9 @@ export default function WhyNowSection() {
     <section id="why-now" className="py-16 md:py-28 relative">
       <div className="max-w-5xl mx-auto px-6">
         <SectionHeading subtitle="Why Now">
-          AI 적용 타이밍,
+          5시간 공부로
           <br />
-          왜 지금일까요?
+          5일이 절약됩니다
         </SectionHeading>
 
         <div className="grid md:grid-cols-3 gap-8">
