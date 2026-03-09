@@ -803,7 +803,7 @@ export default function ClaudeParticles() {
       // 비율 고정: 화면 크기에 관계없이 일정한 비율 유지
       // 모바일에서는 화면 너비 기준으로 더 크게 표시
       const refScale = w < 768
-        ? Math.min(w / 720, h / 900)
+        ? Math.min(w / 800, h / 900)
         : Math.min(w / 1440, h / 900);
       hgW = 380 * refScale;
       hgH = 380 * refScale;
