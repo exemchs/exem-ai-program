@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { FolderOpen, Plug, Repeat } from "lucide-react";
 import SectionHeading from "../common/SectionHeading";
 import Typewriter from "../common/Typewriter";
@@ -38,6 +38,19 @@ const tabs = [
 
 export default function WhatWeLearnSection() {
   const [activeTab, setActiveTab] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVisible(entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const handleComplete = useCallback(() => {
     setTimeout(() => {
@@ -46,7 +59,7 @@ export default function WhatWeLearnSection() {
   }, []);
 
   return (
-    <section className="py-16 md:py-28">
+    <section ref={sectionRef} className="py-16 md:py-28">
       <div className="max-w-5xl mx-auto px-6">
         <div className="grid lg:grid-cols-2 gap-10 md:gap-16 items-center">
           <div>
@@ -99,7 +112,7 @@ export default function WhatWeLearnSection() {
                       <span className="text-white/70 relative">
                         <span className="invisible">{content.user}</span>
                         <span className="absolute inset-0">
-                          {idx === activeTab ? (
+                          {idx === activeTab && isVisible ? (
                             <Typewriter
                               key={`user-${activeTab}`}
                               text={content.user}
@@ -118,7 +131,7 @@ export default function WhatWeLearnSection() {
                         <p className="relative">
                           <span className="invisible">{content.claude[0]}</span>
                           <span className="absolute inset-0">
-                            {idx === activeTab ? (
+                            {idx === activeTab && isVisible ? (
                               <Typewriter
                                 key={`claude-1-${activeTab}`}
                                 text={content.claude[0]}
@@ -133,7 +146,7 @@ export default function WhatWeLearnSection() {
                         <p className="text-white/40 italic relative">
                           <span className="invisible">{content.claude[1]}</span>
                           <span className="absolute inset-0">
-                            {idx === activeTab ? (
+                            {idx === activeTab && isVisible ? (
                               <Typewriter
                                 key={`claude-2-${activeTab}`}
                                 text={content.claude[1]}
@@ -148,7 +161,7 @@ export default function WhatWeLearnSection() {
                         <p className="relative">
                           <span className="invisible">{content.claude[2]}</span>
                           <span className="absolute inset-0">
-                            {idx === activeTab ? (
+                            {idx === activeTab && isVisible ? (
                               <Typewriter
                                 key={`claude-3-${activeTab}`}
                                 text={content.claude[2]}

@@ -271,22 +271,24 @@ export default function CurriculumSection() {
   const [showGuide, setShowGuide] = useState(false);
   const [guideTab, setGuideTab] = useState<"beginner" | "tips" | "faq">("beginner");
   const [faqOpenIdx, setFaqOpenIdx] = useState<number | null>(null);
+  const [isVisible, setIsVisible] = useState(false);
   const terminalRef = useRef<HTMLDivElement>(null);
 
   const current = days[activeDay];
 
-  // Start animation when terminal enters viewport
+  // Start animation when terminal enters viewport + track visibility
   useEffect(() => {
     const el = terminalRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
       ([entry]) => {
+        setIsVisible(entry.isIntersecting);
         if (entry.isIntersecting && !hasEnteredView) {
           setHasEnteredView(true);
           setPhase("typing");
         }
       },
-      { threshold: 0.3 },
+      { threshold: 0 },
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -296,9 +298,9 @@ export default function CurriculumSection() {
     setPhase("streaming");
   }, []);
 
-  // Stream lines one by one
+  // Stream lines one by one (only when visible)
   useEffect(() => {
-    if (phase !== "streaming") return;
+    if (phase !== "streaming" || !isVisible) return;
     if (visibleLines >= current.lines.length) {
       setPhase("done");
       return;
@@ -312,11 +314,11 @@ export default function CurriculumSection() {
       lineType === "highlight" ? 200 : 120;
     const timer = setTimeout(() => setVisibleLines((v) => v + 1), delay);
     return () => clearTimeout(timer);
-  }, [phase, visibleLines, current.lines]);
+  }, [phase, visibleLines, current.lines, isVisible]);
 
-  // Auto-advance to next day after done
+  // Auto-advance to next day after done (only when visible)
   useEffect(() => {
-    if (phase !== "done") return;
+    if (phase !== "done" || !isVisible) return;
     const timer = setTimeout(() => {
       setActiveDay((prev) => (prev + 1) % days.length);
     }, 4000);
