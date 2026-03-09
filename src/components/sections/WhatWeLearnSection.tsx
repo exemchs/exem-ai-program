@@ -52,7 +52,7 @@ export default function WhatWeLearnSection() {
           <div>
             <SectionHeading subtitle="What We Learn">
               우리가 배우는 건<br />
-              기술이 아닌 전략입니다
+              기술이 아닌 새로운 관점입니다
             </SectionHeading>
 
             <div className="flex flex-col gap-3">
@@ -71,7 +71,7 @@ export default function WhatWeLearnSection() {
 
           <div className="relative">
             <div className="absolute inset-0 bg-gradient-to-tr from-[#3B82F6]/10 to-transparent blur-3xl rounded-full"></div>
-            <div className="relative rounded-2xl border border-[#E2E5EB] bg-[#1a1a2e] overflow-hidden shadow-2xl h-[320px] md:h-[400px] flex flex-col terminal-window">
+            <div className="relative rounded-2xl border border-[#E2E5EB] bg-[#1a1a2e] overflow-hidden shadow-2xl min-h-[320px] md:min-h-[400px] flex flex-col terminal-window">
               <div className="h-10 border-b border-white/10 bg-white/5 flex items-center px-4 gap-2 shrink-0">
                 <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
                 <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
@@ -80,7 +80,7 @@ export default function WhatWeLearnSection() {
                   claude-code
                 </div>
               </div>
-              <div className="p-6 font-mono text-sm overflow-y-auto flex-grow">
+              <div className="p-6 font-mono text-sm flex-grow">
                 <div className="flex gap-4 mb-4">
                   <span className="text-[#d0f100]">❯</span>
                   <span className="text-white">claude</span>

@@ -19,11 +19,11 @@ export default function HeroSection() {
       {/* Text — 모바일: 상하 배치, 데스크탑: 모래시계 양옆 */}
       <div className="absolute inset-0 z-10 pointer-events-none">
         {/* 모바일: 중앙 상하 배치 */}
-        <div className="md:hidden absolute inset-x-0 flex flex-col items-center gap-1" style={{ top: "46%", transform: "translateY(-50%)" }}>
-          <h1 className="text-2xl font-normal tracking-tight text-[#fff3d7]">
+        <div className="md:hidden absolute inset-x-0 flex flex-col items-center gap-2" style={{ top: "46%", transform: "translateY(-50%)" }}>
+          <h1 className="text-4xl font-normal tracking-tight text-[#fff3d7]">
             클로드 코드
           </h1>
-          <h1 className="text-2xl font-normal tracking-tight text-[#fff3d7]">
+          <h1 className="text-4xl font-normal tracking-tight text-[#fff3d7]">
             지금 시작하세요
           </h1>
         </div>
